@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* ── Landing mode (default) ──────────────────────────────────────────────── */
+:root {
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --text: #111111;
+  --text-muted: #626260;
+  --border: #E8E5E1;
+  --accent: #0A6E5C;
+  --accent-hover: #085A4B;
+  --accent-light: #E6F4F0;
+  --success: #038153;
+  --error: #CC3340;
+  --warning: #AD5918;
+}
+
+/* ── Dashboard mode overrides ────────────────────────────────────────────── */
+.dashboard-mode,
+:root {
+  --bg: #F8FAFD;
+  --surface: #FFFFFF;
+  --text: #061B31;
+  --text-muted: #50617A;
+  --border: #E5EDF5;
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-light: #EFF6FF;
+  --success: #038153;
+  --error: #CC3340;
+  --warning: #AD5918;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-light: var(--accent-light);
+  --color-success: var(--success);
+  --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-text-muted: var(--text-muted);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ── Utility classes ─────────────────────────────────────────────────────── */
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.surface-elevated {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.accent-btn {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.accent-btn:hover {
+  background: var(--accent-hover);
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.secondary-btn:hover {
+  background: var(--accent-light);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.badge-success {
+  background: #ECFDF5;
+  color: var(--success);
+  border: 1px solid #A7F3D0;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-error {
+  background: #FEF2F2;
+  color: var(--error);
+  border: 1px solid #FECACA;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-warning {
+  background: #FFFBEB;
+  color: var(--warning);
+  border: 1px solid #FDE68A;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
