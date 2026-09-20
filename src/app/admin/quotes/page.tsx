@@ -126,7 +126,7 @@ export default async function QuotesPage() {
                   </div>
                 </div>
                 <span className="text-[13px] font-semibold tabular-nums">
-                  {q.customer_price ? formatCurrency(q.customer_price, q.currency) : '—'}
+                  {q.total_amount ? formatCurrency(q.total_amount, q.currency) : '—'}
                 </span>
                 <span
                   className="inline-flex items-center rounded-md px-2.5 py-0.5 text-[12px] font-semibold w-fit"

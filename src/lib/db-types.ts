@@ -56,6 +56,10 @@ export interface Supplier {
   website?: string;
   is_approved: boolean;
   certifications?: string[];
+  performance_score?: number;
+  total_orders?: number;
+  on_time_rate?: number;
+  quality_reject_rate?: number;
   notes?: string;
   created_at: string;
   updated_at: string;
@@ -114,22 +118,21 @@ export interface Inquiry {
   provider_event_id?: string;
   sender_name?: string;
   sender_email?: string;
+  sender_phone?: string;
   subject?: string;
   original_message?: string;
+  raw_html?: string;
   customer_id?: string;
+  contact_id?: string;
   opportunity_id?: string;
-  reference_number?: string;
   processing_status: string;
+  error_message?: string;
+  detected_language?: string;
   assigned_owner?: string;
   priority: string;
-  estimated_value?: number;
-  status: string;
   category?: string;
-  urgency: string;
-  next_action?: string;
   created_at: string;
   updated_at: string;
-  closed_at?: string;
 }
 
 export interface InquiryField {
@@ -278,10 +281,8 @@ export interface Quote {
   total_margin?: number;
   margin_pct?: number;
   selected_supplier_quote_id?: string;
-  customer_price?: number;
+  current_version?: number;
   valid_until?: string;
-  customer_view_json?: Record<string, unknown>;
-  internal_view_json?: Record<string, unknown>;
   pdf_storage_key?: string;
   created_by?: string;
   approved_by?: string;

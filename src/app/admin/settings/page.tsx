@@ -173,6 +173,54 @@ export default function SettingsPage() {
           <IntegrationRow name="WhatsApp" zh="WhatsApp" connected={false} />
         </div>
       </div>
+
+      {/* Email Forwarding Setup */}
+      <div
+        className="rounded-[4px] border p-5"
+        style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
+      >
+        <h2 className="text-[15px] font-semibold" style={{ color: 'var(--text)' }}>
+          {t('Email Forwarding Setup', '邮件转发设置')}
+        </h2>
+        <div className="mt-3 space-y-3 text-[13px]">
+          <p style={{ color: 'var(--text-muted)' }}>
+            {t(
+              'Configure your email provider to forward incoming emails to this webhook endpoint. Incoming emails will be automatically converted into inquiries and processed by the AI extraction pipeline.',
+              '配置您的邮件提供商将收到的邮件转发到此 webhook 端点。收到的邮件将自动转换为询盘，并由 AI 提取管道处理。',
+            )}
+          </p>
+          <div>
+            <span className="text-[12px] font-medium" style={{ color: 'var(--text-muted)' }}>
+              {t('Webhook URL', 'Webhook URL')}
+            </span>
+            <div
+              className="mt-1 flex items-center gap-2 rounded-[4px] border px-3 py-2 font-mono text-[12px]"
+              style={{ background: 'var(--bg)', borderColor: 'var(--border)', color: 'var(--text)' }}
+            >
+              <span className="flex-1 truncate">{typeof window !== 'undefined' ? `${window.location.origin}/api/webhooks/email` : '/api/webhooks/email'}</span>
+              <button
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    navigator.clipboard.writeText(`${window.location.origin}/api/webhooks/email`);
+                  }
+                }}
+                className="shrink-0 text-[12px] font-medium transition-colors hover:underline"
+                style={{ color: 'var(--accent)' }}
+              >
+                {t('Copy', '复制')}
+              </button>
+            </div>
+          </div>
+          <div className="rounded-[4px] border px-3 py-2" style={{ background: '#FFFBEB', borderColor: '#FDE68A' }}>
+            <p className="text-[12px]" style={{ color: '#92400E' }}>
+              {t(
+                'After extracting fields, the AI will create inquiry_field records in the database. You can view extracted fields on each inquiry detail page.',
+                '提取字段后，AI 会在数据库中创建 inquiry_field 记录。您可以在每个询盘详情页面查看提取的字段。',
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

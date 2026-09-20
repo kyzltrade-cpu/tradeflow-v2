@@ -4,10 +4,12 @@ import { formatDate } from '@/lib/utils';
 
 const STATUS_BADGE: Record<string, { en: string; zh: string; bg: string; fg: string; border: string }> = {
   new: { en: 'New', zh: '新', bg: '#EFF6FF', fg: '#2563EB', border: '#BFDBFE' },
+  processing: { en: 'Processing', zh: '处理中', bg: '#FFFBEB', fg: '#D97706', border: '#FDE68A' },
+  completed: { en: 'Completed', zh: '已完成', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
+  failed: { en: 'Failed', zh: '失败', bg: '#FEF2F2', fg: '#CC3340', border: '#FECACA' },
   needs_clarification: { en: 'Needs Clarification', zh: '需要澄清', bg: '#FFFBEB', fg: '#D97706', border: '#FDE68A' },
   clarification_sent: { en: 'Clarification Sent', zh: '已发澄清', bg: '#EFF6FF', fg: '#2563EB', border: '#BFDBFE' },
   customer_replied: { en: 'Customer Replied', zh: '客户已回复', bg: '#EFF6FF', fg: '#2563EB', border: '#BFDBFE' },
-  requirements_confirmed: { en: 'Confirmed', zh: '已确认', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
   qualified: { en: 'Qualified', zh: '已合格', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
   declined: { en: 'Declined', zh: '已拒绝', bg: '#FEF2F2', fg: '#CC3340', border: '#FECACA' },
   duplicate: { en: 'Duplicate', zh: '重复', bg: '#F3F4F6', fg: '#6B7280', border: '#D1D5DB' },
@@ -83,13 +85,12 @@ export default async function InquiriesPage() {
           <div
             className="grid gap-4 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider border-b"
             style={{
-              gridTemplateColumns: '1fr 1.5fr 0.8fr 0.8fr 0.7fr',
+              gridTemplateColumns: '1.5fr 0.8fr 0.8fr 0.7fr',
               color: 'var(--text-muted)',
               borderColor: 'var(--border)',
               background: 'var(--bg)',
             }}
           >
-            <span>Reference</span>
             <span>Subject</span>
             <span>Priority</span>
             <span>Status</span>
@@ -97,7 +98,7 @@ export default async function InquiriesPage() {
           </div>
 
           {inquiries.map((inquiry) => {
-            const statusBadge = STATUS_BADGE[inquiry.status] ?? STATUS_BADGE.new;
+            const statusBadge = STATUS_BADGE[inquiry.processing_status] ?? STATUS_BADGE.new;
             const priorityBadge = PRIORITY_BADGE[inquiry.priority] ?? PRIORITY_BADGE.medium;
             return (
               <Link
@@ -105,14 +106,11 @@ export default async function InquiriesPage() {
                 href={`/admin/inquiries/${inquiry.id}`}
                 className="grid gap-4 border-b px-4 py-3 transition-colors hover:bg-[var(--accent-light)] last:border-b-0"
                 style={{
-                  gridTemplateColumns: '1fr 1.5fr 0.8fr 0.8fr 0.7fr',
+                  gridTemplateColumns: '1.5fr 0.8fr 0.8fr 0.7fr',
                   borderColor: 'var(--border)',
                   color: 'var(--text)',
                 }}
               >
-                <span className="text-[13px] font-semibold" style={{ color: 'var(--accent)' }}>
-                  {inquiry.reference_number || '—'}
-                </span>
                 <div className="min-w-0">
                   <div className="text-[13px] font-medium truncate">{inquiry.subject || 'No subject'}</div>
                   <div className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>

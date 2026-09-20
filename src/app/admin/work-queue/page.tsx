@@ -80,12 +80,12 @@ export default async function WorkQueuePage() {
 
   // Compute stats from real data
   const pendingInquiries = inquiries.filter(
-    (i) => i.status === 'new' || i.status === 'needs_clarification' || i.status === 'customer_replied',
+    (i) => i.processing_status === 'new' || i.processing_status === 'processing',
   );
   const activeQuotes = quotes.filter(
     (q) => q.status === 'draft' || q.status === 'pending_approval' || q.status === 'sent' || q.status === 'viewed',
   );
-  const totalPipelineValue = quotes.reduce((sum, q) => sum + (q.total_amount || q.customer_price || 0), 0);
+  const totalPipelineValue = quotes.reduce((sum, q) => sum + (q.total_amount || 0), 0);
   const approvedSuppliers = suppliers.filter((s) => s.is_approved);
 
   // Build action cards from real data
