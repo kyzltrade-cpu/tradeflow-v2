@@ -228,30 +228,46 @@ Pacific Drinks Pty`,
   },
 ];
 
-/* ── Channel label ─────────────────────────────────────────────────────── */
+/* ── Channel icon + label ────────────────────────────────────────────── */
 
-function ChannelLabel({ channel }: { channel: string }) {
-  const map: Record<string, { label: string; dot: string; bg: string; fg: string; border: string }> = {
-    email: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
-    whatsapp: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
-    wechat: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
-    manual: { label: 'Manual capture', dot: '#EAB308', bg: '#FEFCE8', fg: '#854D0E', border: '#FEF08A' },
-  };
-  const b = map[channel] ?? map.email;
+const CHANNEL_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; icon: string }> = {
+  email: {
+    label: 'Email',
+    color: '#2563EB',
+    bg: '#EFF6FF',
+    border: '#BFDBFE',
+    icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75',
+  },
+  whatsapp: {
+    label: 'WhatsApp',
+    color: '#25D366',
+    bg: '#F0FDF4',
+    border: '#BBF7D0',
+    icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z',
+  },
+  wechat: {
+    label: 'WeChat',
+    color: '#07C160',
+    bg: '#F0FDF4',
+    border: '#BBF7D0',
+    icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z',
+  },
+};
+
+function ChannelBadge({ channel }: { channel: string }) {
+  const cfg = CHANNEL_CONFIG[channel] ?? CHANNEL_CONFIG.email;
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium"
-      style={{ background: b.bg, color: b.fg, border: `1px solid ${b.border}` }}
+      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold"
+      style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
     >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: b.dot }} />
-      {b.label}
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3 w-3">
+        <path strokeLinecap="round" strokeLinejoin="round" d={cfg.icon} />
+      </svg>
+      {cfg.label}
     </span>
   );
 }
-
-/* ── Category filter tabs ─────────────────────────────────────────────── */
-
-type FilterTab = 'all' | 'unread' | 'inquiries' | 'suppliers';
 
 /* ── Workflow state badge ─────────────────────────────────────────────── */
 
@@ -266,38 +282,58 @@ function WorkflowBadge({ stage }: { stage: string }) {
   );
 }
 
+/* ── Category filter tabs ─────────────────────────────────────────────── */
+
+type CategoryTab = 'all' | 'unread' | 'inquiries' | 'suppliers';
+type ChannelTab = 'all' | 'email' | 'whatsapp' | 'wechat';
+
 /* ── Page ─────────────────────────────────────────────────────────────── */
 
 export default function InboxPage() {
   const { t } = useLang();
   const [selectedId, setSelectedId] = useState<string>(MOCK_MESSAGES[0].id);
-  const [filter, setFilter] = useState<FilterTab>('all');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryTab>('all');
+  const [channelFilter, setChannelFilter] = useState<ChannelTab>('all');
 
   const filtered = MOCK_MESSAGES.filter((msg) => {
-    if (filter === 'all') return true;
-    if (filter === 'unread') return msg.unread;
-    if (filter === 'inquiries') return msg.category === 'inquiry';
-    if (filter === 'suppliers') return msg.category === 'supplier';
+    if (categoryFilter === 'unread' && !msg.unread) return false;
+    if (categoryFilter === 'inquiries' && msg.category !== 'inquiry') return false;
+    if (categoryFilter === 'suppliers' && msg.category !== 'supplier') return false;
+    if (channelFilter !== 'all' && msg.channel !== channelFilter) return false;
     return true;
   });
 
   const selected = MOCK_MESSAGES.find((m) => m.id === selectedId) ?? MOCK_MESSAGES[0];
 
-  const tabs: { key: FilterTab; en: string; zh: string }[] = [
+  const categoryTabs: { key: CategoryTab; en: string; zh: string }[] = [
     { key: 'all', en: 'All', zh: '全部' },
     { key: 'unread', en: 'Unread', zh: '未读' },
     { key: 'inquiries', en: 'Inquiries', zh: '询盘' },
     { key: 'suppliers', en: 'Suppliers', zh: '供应商' },
   ];
 
-  const channelColor: Record<string, string> = {
+  const channelTabs: { key: ChannelTab; en: string; zh: string }[] = [
+    { key: 'all', en: 'All Channels', zh: '所有渠道' },
+    { key: 'email', en: 'Email', zh: '邮件' },
+    { key: 'whatsapp', en: 'WhatsApp', zh: 'WhatsApp' },
+    { key: 'wechat', en: 'WeChat', zh: '微信' },
+  ];
+
+  const channelDot: Record<string, string> = {
     email: '#2563EB',
     whatsapp: '#25D366',
-    wechat: '#25D366',
+    wechat: '#07C160',
+  };
+
+  const channelCounts = {
+    all: MOCK_MESSAGES.length,
+    email: MOCK_MESSAGES.filter((m) => m.channel === 'email').length,
+    whatsapp: MOCK_MESSAGES.filter((m) => m.channel === 'whatsapp').length,
+    wechat: MOCK_MESSAGES.filter((m) => m.channel === 'wechat').length,
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-4">
       {/* Header */}
       <div>
         <h1 className="text-[22px] font-bold" style={{ color: 'var(--text)' }}>
@@ -311,27 +347,67 @@ export default function InboxPage() {
         </p>
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex items-center gap-1 rounded-[4px] border p-1" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setFilter(tab.key)}
-            className="rounded-[4px] px-3 py-1.5 text-[13px] font-medium transition-colors"
-            style={{
-              background: filter === tab.key ? 'var(--accent)' : 'transparent',
-              color: filter === tab.key ? '#fff' : 'var(--text-muted)',
-            }}
-          >
-            {t(tab.en, tab.zh)}
-          </button>
-        ))}
+      {/* Two-row filter bar */}
+      <div className="space-y-2">
+        {/* Row 1: Category tabs */}
+        <div className="flex items-center gap-1 rounded-[4px] border p-1" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+          {categoryTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setCategoryFilter(tab.key)}
+              className="rounded-[4px] px-3 py-1.5 text-[13px] font-medium transition-colors"
+              style={{
+                background: categoryFilter === tab.key ? 'var(--accent)' : 'transparent',
+                color: categoryFilter === tab.key ? '#fff' : 'var(--text-muted)',
+              }}
+            >
+              {t(tab.en, tab.zh)}
+            </button>
+          ))}
+        </div>
+
+        {/* Row 2: Channel filter pills */}
+        <div className="flex items-center gap-2">
+          {channelTabs.map((tab) => {
+            const count = channelCounts[tab.key];
+            const isActive = channelFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setChannelFilter(tab.key)}
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium transition-all"
+                style={{
+                  background: isActive ? (tab.key === 'all' ? 'var(--accent)' : CHANNEL_CONFIG[tab.key]?.bg ?? '#F3F4F6') : 'var(--surface)',
+                  color: isActive ? (tab.key === 'all' ? '#fff' : CHANNEL_CONFIG[tab.key]?.color ?? '#6B7280') : 'var(--text-muted)',
+                  border: `1px solid ${isActive ? (tab.key === 'all' ? 'var(--accent)' : CHANNEL_CONFIG[tab.key]?.border ?? '#E5E7EB') : 'var(--border)'}`,
+                }}
+              >
+                {tab.key !== 'all' && (
+                  <span
+                    className="h-2 w-2 rounded-full"
+                    style={{ background: isActive ? '#fff' : channelDot[tab.key] ?? '#6B7280' }}
+                  />
+                )}
+                {t(tab.en, tab.zh)}
+                <span
+                  className="ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                  style={{
+                    background: isActive ? 'rgba(255,255,255,0.2)' : '#F3F4F6',
+                    color: isActive ? '#fff' : 'var(--text-muted)',
+                  }}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Split view */}
       <div className="flex gap-0 rounded-[4px] border overflow-hidden" style={{ background: 'var(--surface)', borderColor: 'var(--border)', minHeight: 600 }}>
 
-        {/* ═══ LEFT: Email list (30%) ════════════════════════════════════ */}
+        {/* ═══ LEFT: Message list (30%) ═══════════════════════════════════ */}
         <div className="w-[30%] min-w-[240px] border-r overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
           {filtered.length === 0 ? (
             <div className="p-8 text-center text-[13px]" style={{ color: 'var(--text-muted)' }}>
@@ -340,6 +416,7 @@ export default function InboxPage() {
           ) : (
             filtered.map((msg) => {
               const isSelected = msg.id === selectedId;
+              const cfg = CHANNEL_CONFIG[msg.channel] ?? CHANNEL_CONFIG.email;
               return (
                 <button
                   key={msg.id}
@@ -354,7 +431,7 @@ export default function InboxPage() {
                     {/* Channel dot */}
                     <div
                       className="h-2 w-2 rounded-full shrink-0 mt-1.5"
-                      style={{ background: channelColor[msg.channel] ?? '#6B7280' }}
+                      style={{ background: channelDot[msg.channel] ?? '#6B7280' }}
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
@@ -377,11 +454,12 @@ export default function InboxPage() {
                       >
                         {msg.subject}
                       </p>
-                      {msg.workflowState && (
-                        <div className="mt-1">
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <ChannelBadge channel={msg.channel} />
+                        {msg.workflowState && (
                           <WorkflowBadge stage={msg.workflowState.stage} />
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                     {/* Unread indicator */}
                     {msg.unread && (
@@ -397,7 +475,7 @@ export default function InboxPage() {
           )}
         </div>
 
-        {/* ═══ RIGHT: Email detail (70%) ════════════════════════════════ */}
+        {/* ═══ RIGHT: Message detail (70%) ════════════════════════════════ */}
         <div className="flex-1 flex">
           {/* Email content (55%) */}
           <div className="flex-1 overflow-y-auto" style={{ borderRight: '1px solid var(--border)' }}>
@@ -408,7 +486,7 @@ export default function InboxPage() {
                   <h2 className="text-[16px] font-bold" style={{ color: 'var(--text)' }}>
                     {selected.subject}
                   </h2>
-                  <ChannelLabel channel={selected.channel} />
+                  <ChannelBadge channel={selected.channel} />
                 </div>
 
                 {/* From / To / Date */}
@@ -575,7 +653,7 @@ export default function InboxPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Channel</span>
-                  <span className="text-[12px] font-medium capitalize" style={{ color: 'var(--text)' }}>{selected.channel}</span>
+                  <ChannelBadge channel={selected.channel} />
                 </div>
               </div>
             </div>
