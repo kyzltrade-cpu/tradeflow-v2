@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useDemo } from '@/lib/demo-store';
+import Link from 'next/link';
 import { useLang } from '@/lib/lang';
 import { formatDate, formatDateTime } from '@/lib/utils';
 
@@ -20,6 +20,12 @@ interface InboxMessage {
   unread: boolean;
   category: 'inquiry' | 'supplier' | 'other';
   attachments: { name: string; size: string }[];
+  relatedInquiryId?: string;
+  workflowState?: {
+    stage: string;
+    nextAction: string;
+    status: string;
+  };
 }
 
 const MOCK_MESSAGES: InboxMessage[] = [
@@ -52,6 +58,12 @@ Global Bottling Ltd`,
     unread: false,
     category: 'inquiry',
     attachments: [],
+    relatedInquiryId: 'inq1',
+    workflowState: {
+      stage: 'Requirements Confirmed',
+      nextAction: 'Match suppliers and create RFQ batch',
+      status: 'requirements_confirmed',
+    },
   },
   {
     id: 'inbox2',
@@ -88,6 +100,12 @@ Shenzhen Steel Works Manufacturing Co., Ltd`,
       { name: 'ISO-9001-Certificate-2026.pdf', size: '245 KB' },
       { name: 'BSCI-Audit-Report.pdf', size: '1.2 MB' },
     ],
+    relatedInquiryId: 'inq1',
+    workflowState: {
+      stage: 'Supplier Response Received',
+      nextAction: 'Review and normalize response',
+      status: 'responded',
+    },
   },
   {
     id: 'inbox3',
@@ -113,6 +131,12 @@ Li Chen`,
     unread: true,
     category: 'supplier',
     attachments: [],
+    relatedInquiryId: 'inq1',
+    workflowState: {
+      stage: 'Incomplete Response',
+      nextAction: 'Follow up for missing details',
+      status: 'incomplete',
+    },
   },
   {
     id: 'inbox4',
@@ -145,6 +169,12 @@ Yiwu Drinkware Factory`,
     attachments: [
       { name: 'Product-Catalog-2026.pdf', size: '3.8 MB' },
     ],
+    relatedInquiryId: 'inq1',
+    workflowState: {
+      stage: 'Supplier Response Received',
+      nextAction: 'Review and normalize response',
+      status: 'responded',
+    },
   },
   {
     id: 'inbox5',
@@ -198,9 +228,43 @@ Pacific Drinks Pty`,
   },
 ];
 
+/* ── Channel label ─────────────────────────────────────────────────────── */
+
+function ChannelLabel({ channel }: { channel: string }) {
+  const map: Record<string, { label: string; dot: string; bg: string; fg: string; border: string }> = {
+    email: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
+    whatsapp: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
+    wechat: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
+    manual: { label: 'Manual capture', dot: '#EAB308', bg: '#FEFCE8', fg: '#854D0E', border: '#FEF08A' },
+  };
+  const b = map[channel] ?? map.email;
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-medium"
+      style={{ background: b.bg, color: b.fg, border: `1px solid ${b.border}` }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: b.dot }} />
+      {b.label}
+    </span>
+  );
+}
+
 /* ── Category filter tabs ─────────────────────────────────────────────── */
 
 type FilterTab = 'all' | 'unread' | 'inquiries' | 'suppliers';
+
+/* ── Workflow state badge ─────────────────────────────────────────────── */
+
+function WorkflowBadge({ stage }: { stage: string }) {
+  return (
+    <span
+      className="inline-flex items-center rounded px-2 py-0.5 text-[10px] font-medium"
+      style={{ background: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}
+    >
+      {stage}
+    </span>
+  );
+}
 
 /* ── Page ─────────────────────────────────────────────────────────────── */
 
@@ -233,7 +297,7 @@ export default function InboxPage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-[22px] font-bold" style={{ color: 'var(--text)' }}>
@@ -265,7 +329,7 @@ export default function InboxPage() {
       </div>
 
       {/* Split view */}
-      <div className="flex gap-0 rounded-[4px] border overflow-hidden" style={{ background: 'var(--surface)', borderColor: 'var(--border)', minHeight: 500 }}>
+      <div className="flex gap-0 rounded-[4px] border overflow-hidden" style={{ background: 'var(--surface)', borderColor: 'var(--border)', minHeight: 600 }}>
 
         {/* ═══ LEFT: Email list (30%) ════════════════════════════════════ */}
         <div className="w-[30%] min-w-[240px] border-r overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
@@ -313,6 +377,11 @@ export default function InboxPage() {
                       >
                         {msg.subject}
                       </p>
+                      {msg.workflowState && (
+                        <div className="mt-1">
+                          <WorkflowBadge stage={msg.workflowState.stage} />
+                        </div>
+                      )}
                     </div>
                     {/* Unread indicator */}
                     {msg.unread && (
@@ -329,113 +398,207 @@ export default function InboxPage() {
         </div>
 
         {/* ═══ RIGHT: Email detail (70%) ════════════════════════════════ */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
-            {/* Email header */}
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-4">
-                <h2 className="text-[16px] font-bold" style={{ color: 'var(--text)' }}>
-                  {selected.subject}
-                </h2>
-                <span
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-                  style={{
-                    background: channelColor[selected.channel] + '18',
-                    color: channelColor[selected.channel],
-                    border: `1px solid ${channelColor[selected.channel]}40`,
-                  }}
-                >
-                  {selected.channel}
-                </span>
-              </div>
-
-              {/* From / To / Date */}
-              <div className="rounded-[4px] border p-3 space-y-1.5" style={{ borderColor: 'var(--border)' }}>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide w-12 shrink-0" style={{ color: 'var(--text-muted)' }}>
-                    {t('From', '发件人')}
-                  </span>
-                  <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>
-                    {selected.from}
-                  </span>
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                    &lt;{selected.fromEmail}&gt;
-                  </span>
+        <div className="flex-1 flex">
+          {/* Email content (55%) */}
+          <div className="flex-1 overflow-y-auto" style={{ borderRight: '1px solid var(--border)' }}>
+            <div className="p-6 space-y-6">
+              {/* Email header */}
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-4">
+                  <h2 className="text-[16px] font-bold" style={{ color: 'var(--text)' }}>
+                    {selected.subject}
+                  </h2>
+                  <ChannelLabel channel={selected.channel} />
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide w-12 shrink-0" style={{ color: 'var(--text-muted)' }}>
-                    {t('To', '收件人')}
-                  </span>
-                  <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>
-                    {selected.to}
-                  </span>
-                  <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                    &lt;{selected.toEmail}&gt;
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide w-12 shrink-0" style={{ color: 'var(--text-muted)' }}>
-                    {t('Date', '日期')}
-                  </span>
-                  <span className="text-[12px]" style={{ color: 'var(--text)' }}>
-                    {formatDateTime(selected.date)}
-                  </span>
-                </div>
-              </div>
-            </div>
 
-            {/* Email body */}
-            <div
-              className="rounded-[4px] border p-5 text-[13px] leading-relaxed whitespace-pre-wrap"
-              style={{ background: '#FAFBFD', borderColor: 'var(--border)', color: 'var(--text)' }}
-            >
-              {selected.body}
-            </div>
-
-            {/* Attachments */}
-            {selected.attachments.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-                  {t('Attachments', '附件')} ({selected.attachments.length})
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                  {selected.attachments.map((att) => (
-                    <span
-                      key={att.name}
-                      className="inline-flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-[11px] font-medium"
-                      style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
-                      </svg>
-                      <span>{att.name}</span>
-                      <span className="opacity-50">({att.size})</span>
+                {/* From / To / Date */}
+                <div className="rounded-[4px] border p-3 space-y-1.5" style={{ borderColor: 'var(--border)' }}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide w-12 shrink-0" style={{ color: 'var(--text-muted)' }}>
+                      From
                     </span>
-                  ))}
+                    <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>
+                      {selected.from}
+                    </span>
+                    <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      &lt;{selected.fromEmail}&gt;
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide w-12 shrink-0" style={{ color: 'var(--text-muted)' }}>
+                      To
+                    </span>
+                    <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>
+                      {selected.to}
+                    </span>
+                    <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      &lt;{selected.toEmail}&gt;
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide w-12 shrink-0" style={{ color: 'var(--text-muted)' }}>
+                      Date
+                    </span>
+                    <span className="text-[12px]" style={{ color: 'var(--text)' }}>
+                      {formatDateTime(selected.date)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Email body */}
+              <div
+                className="rounded-[4px] border p-5 text-[13px] leading-relaxed whitespace-pre-wrap"
+                style={{ background: '#FAFBFD', borderColor: 'var(--border)', color: 'var(--text)' }}
+              >
+                {selected.body}
+              </div>
+
+              {/* Attachments */}
+              {selected.attachments.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                    Attachments ({selected.attachments.length})
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.attachments.map((att) => (
+                      <span
+                        key={att.name}
+                        className="inline-flex items-center gap-1.5 rounded border px-2.5 py-1.5 text-[11px] font-medium"
+                        style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+                        </svg>
+                        <span>{att.name}</span>
+                        <span className="opacity-50">({att.size})</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quick actions */}
+              <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                <button
+                  className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ background: 'var(--accent)', color: '#fff' }}
+                >
+                  Reply
+                </button>
+                <button
+                  className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ background: '#F3F4F6', color: 'var(--text)', border: '1px solid var(--border)' }}
+                >
+                  Forward
+                </button>
+                <button
+                  className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all hover:opacity-90 active:scale-[0.98]"
+                  style={{ background: '#F3F4F6', color: 'var(--text)', border: '1px solid var(--border)' }}
+                >
+                  Archive
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ Context Panel (45%) ═════════════════════════════════════ */}
+          <div className="w-[45%] min-w-[280px] overflow-y-auto p-4 space-y-4" style={{ background: '#FAFBFD' }}>
+            {/* Related Inquiry */}
+            {selected.relatedInquiryId && (
+              <div className="rounded-[4px] border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                    Related Inquiry
+                  </span>
+                  <Link
+                    href={`/admin/inquiries/${selected.relatedInquiryId}`}
+                    className="text-[12px] font-medium transition-colors hover:underline"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    View Details →
+                  </Link>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Reference</span>
+                    <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>TF-2026-0193</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Customer</span>
+                    <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>Global Bottling Ltd</span>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Quick actions */}
-            <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-              <button
-                className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: 'var(--accent)', color: '#fff' }}
-              >
-                {t('Reply', '回复')}
-              </button>
-              <button
-                className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: '#F3F4F6', color: 'var(--text)', border: '1px solid var(--border)' }}
-              >
-                {t('Forward', '转发')}
-              </button>
-              <button
-                className="rounded-lg px-4 py-2 text-[13px] font-medium transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: '#F3F4F6', color: 'var(--text)', border: '1px solid var(--border)' }}
-              >
-                {t('Archive', '归档')}
-              </button>
+            {/* Workflow State */}
+            {selected.workflowState && (
+              <div className="rounded-[4px] border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+                <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                  Workflow State
+                </span>
+                <div className="mt-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Current Stage</span>
+                    <WorkflowBadge stage={selected.workflowState.stage} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Status</span>
+                    <span className="text-[12px] font-medium capitalize" style={{ color: 'var(--text)' }}>
+                      {selected.workflowState.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Next Action</span>
+                    <p className="text-[12px] font-medium mt-1" style={{ color: 'var(--text)' }}>
+                      {selected.workflowState.nextAction}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Sender Info */}
+            <div className="rounded-[4px] border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                Sender Information
+              </span>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Name</span>
+                  <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>{selected.from}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Email</span>
+                  <span className="text-[12px] font-medium truncate max-w-[150px]" style={{ color: 'var(--text)' }}>{selected.fromEmail}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Channel</span>
+                  <span className="text-[12px] font-medium capitalize" style={{ color: 'var(--text)' }}>{selected.channel}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Message Metadata */}
+            <div className="rounded-[4px] border p-4" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                Message Details
+              </span>
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Received</span>
+                  <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>{formatDateTime(selected.date)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Category</span>
+                  <span className="text-[12px] font-medium capitalize" style={{ color: 'var(--text)' }}>{selected.category}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Attachments</span>
+                  <span className="text-[12px] font-medium" style={{ color: 'var(--text)' }}>{selected.attachments.length}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

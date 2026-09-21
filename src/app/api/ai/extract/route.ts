@@ -38,16 +38,51 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: `Extract structured inquiry data from this email. Return JSON with these fields:
-- product_name: string (what they're buying)
-- quantity: number (how many)
-- unit: string (pcs, sets, kg, etc.)
-- target_price: number (if mentioned, otherwise null)
-- currency: string (USD, HKD, etc.)
-- incoterm: string (FOB, CIF, EXW, DDP)
-- delivery_date: string (if mentioned, otherwise null)
-- specifications: object (any specs mentioned)
-- language: string (detected language code)
+            content: `You are a trade inquiry field extractor. Extract structured data from the customer message.
+
+CRITICAL RULES:
+1. NEVER make commercial claims or guarantees without evidence from the source text
+2. ALWAYS show the source type for each field: "customer_message", "supplier_record", "historical_quote", "user_assumption", or "unverified_inference"
+3. Distinguish between what the customer EXPLICITLY stated vs what you INFERENCE
+4. Mark fields as "missing" when not mentioned in the source
+5. Mark fields as "inferred" when based on inference rather than explicit mention
+6. Mark fields as "confirmed" ONLY when explicitly stated by the customer
+
+Return JSON with this structure:
+{
+  "fields": [
+    {
+      "field_key": "product_name",
+      "field_label": "Product Name",
+      "raw_value": "what the customer said",
+      "normalized_value": "cleaned value",
+      "unit": "unit if applicable",
+      "source_type": "customer_message|supplier_record|historical_quote|user_assumption|unverified_inference",
+      "confidence": 0.95,
+      "status": "confirmed|inferred|missing",
+      "is_required": true|false
+    }
+  ],
+  "language": "en",
+  "missing_fields": ["field_key1", "field_key2"],
+  "inferred_fields": ["field_key1"]
+}
+
+Fields to extract (if present):
+- product_name: what they're buying
+- quantity: how many
+- unit: pcs, sets, kg, etc.
+- target_price: if mentioned
+- currency: USD, HKD, etc.
+- incoterm: FOB, CIF, EXW, DDP
+- delivery_date: when they need it
+- specifications: any specs mentioned
+- certifications: required certifications
+- destination: delivery destination
+- packaging: packaging requirements
+- payment_terms: payment preferences
+- colour: color preferences
+
 Return ONLY valid JSON.`,
           },
           {
@@ -79,15 +114,32 @@ Return ONLY valid JSON.`,
       })
       .eq('id', inquiry_id);
 
-    await supabase.from('inquiry_fields').insert([
-      { inquiry_id, field_key: 'product_name', field_label: 'Product Name', raw_value: extracted.product_name, source_type: 'ai_inference', confidence: 0.85, status: 'extracted', is_required: true },
-      { inquiry_id, field_key: 'quantity', field_label: 'Quantity', raw_value: String(extracted.quantity ?? ''), normalized_value: String(extracted.quantity ?? ''), unit: extracted.unit, source_type: 'ai_inference', confidence: 0.8, status: extracted.quantity ? 'extracted' : 'missing', is_required: true },
-      { inquiry_id, field_key: 'target_price', field_label: 'Target Price', raw_value: extracted.target_price != null ? String(extracted.target_price) : '', source_type: 'ai_inference', confidence: 0.7, status: extracted.target_price ? 'extracted' : 'missing', is_required: false },
-      { inquiry_id, field_key: 'currency', field_label: 'Currency', raw_value: extracted.currency || '', source_type: 'ai_inference', confidence: 0.9, status: extracted.currency ? 'extracted' : 'missing', is_required: true },
-      { inquiry_id, field_key: 'incoterm', field_label: 'Incoterm', raw_value: extracted.incoterm || '', source_type: 'ai_inference', confidence: 0.85, status: extracted.incoterm ? 'extracted' : 'missing', is_required: true },
-    ]);
+    // Insert extracted fields with proper source tracking
+    const fieldsToInsert = extracted.fields.map((field: Record<string, unknown>) => ({
+      inquiry_id,
+      field_key: field.field_key,
+      field_label: field.field_label,
+      raw_value: field.raw_value,
+      normalized_value: field.normalized_value,
+      unit: field.unit,
+      source_type: field.source_type,
+      confidence: field.confidence,
+      status: field.status,
+      is_required: field.is_required,
+    }));
 
-    return NextResponse.json({ success: true, extracted });
+    await supabase.from('inquiry_fields').insert(fieldsToInsert);
+
+    return NextResponse.json({
+      success: true,
+      extracted,
+      summary: {
+        total_fields: fieldsToInsert.length,
+        confirmed: extracted.fields.filter((f: Record<string, unknown>) => f.status === 'confirmed').length,
+        inferred: extracted.fields.filter((f: Record<string, unknown>) => f.status === 'inferred').length,
+        missing: extracted.missing_fields?.length || 0,
+      },
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
