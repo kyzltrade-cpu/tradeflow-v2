@@ -190,6 +190,7 @@ export const inquiry: Inquiry = {
   conversationId: 'conv1',
   customerId: 'c1',
   status: 'requirements_confirmed',
+  processing_status: 'processing',
   categoryId: 'cat1',
   ownerId: 'u2',
   urgency: 'high',

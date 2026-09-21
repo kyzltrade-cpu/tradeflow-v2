@@ -95,9 +95,24 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<InitialSnapshot>(() => structuredClone(INITIAL));
 
   const advanceInquiryStatus = useCallback((nextStatus: Inquiry['status']) => {
+    const processingMap: Record<string, string> = {
+      new: 'new',
+      needs_clarification: 'processing',
+      clarification_sent: 'processing',
+      customer_replied: 'processing',
+      requirements_confirmed: 'processing',
+      qualified: 'completed',
+      on_hold: 'processing',
+      declined: 'failed',
+      duplicate: 'failed',
+    };
     setState((prev) => ({
       ...prev,
-      inquiry: { ...prev.inquiry, status: nextStatus },
+      inquiry: {
+        ...prev.inquiry,
+        status: nextStatus,
+        processing_status: processingMap[nextStatus] ?? 'processing',
+      },
     }));
   }, []);
 

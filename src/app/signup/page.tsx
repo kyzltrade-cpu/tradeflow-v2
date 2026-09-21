@@ -53,8 +53,6 @@ export default function SignupPage() {
     // 3. Create user record linked to company
     const { error: userError } = await supabase.from('users').insert({
       company_id: company.id,
-      auth_user_id: authData.user.id,
-      name: fullName,
       email,
       role: 'OWNER',
     });

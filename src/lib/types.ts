@@ -130,6 +130,7 @@ export interface Inquiry {
   conversationId: string;
   customerId: string;
   status: InquiryStatus;
+  processing_status: string;
   categoryId: string;
   ownerId: string;
   urgency: 'low' | 'medium' | 'high' | 'urgent';

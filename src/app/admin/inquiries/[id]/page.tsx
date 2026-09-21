@@ -3,9 +3,8 @@
 import { use, useState } from 'react';
 import Link from 'next/link';
 import { useDemo } from '@/lib/demo-store';
-import { useLang } from '@/lib/lang';
-import { formatDate, formatDateTime, formatCurrency, formatNumber, formatRelativeTime } from '@/lib/utils';
-import type { InquiryStatus, FieldStatus, FieldSourceType, InquiryField } from '@/lib/types';
+import { formatDate, formatDateTime, formatCurrency, formatRelativeTime } from '@/lib/utils';
+import type { FieldStatus, FieldSourceType, InquiryField } from '@/lib/types';
 import { RFQTab } from './rfq-tab';
 import { ComparisonTab } from './comparison-tab';
 import { QuoteTab } from './quote-tab';
@@ -26,18 +25,13 @@ const STAGES: { key: string; en: string; zh: string; tab: TabKey }[] = [
 
 const STAGE_INDEX: Record<string, number> = {
   new: 0,
-  needs_clarification: 1,
-  clarification_sent: 1,
-  customer_replied: 1,
-  requirements_confirmed: 2,
-  qualified: 3,
-  on_hold: 1,
-  declined: 8,
-  duplicate: 8,
+  processing: 1,
+  completed: 8,
+  failed: 8,
 };
 
-function getStageIndex(status: InquiryStatus): number {
-  return STAGE_INDEX[status] ?? 0;
+function getStageIndex(processingStatus: string): number {
+  return STAGE_INDEX[processingStatus] ?? 0;
 }
 
 type TabKey = 'details' | 'requirements' | 'suppliers' | 'comparison' | 'quote' | 'activity';
@@ -75,17 +69,12 @@ function ChannelBadge({ channel }: { channel: string }) {
 
 /* ── Badge helpers ───────────────────────────────────────────────────────── */
 
-function StatusBadge({ status }: { status: InquiryStatus }) {
-  const map: Record<InquiryStatus, { label: string; bg: string; fg: string; border: string }> = {
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; bg: string; fg: string; border: string }> = {
     new: { label: 'New', bg: '#EFF6FF', fg: '#2563EB', border: '#BFDBFE' },
-    needs_clarification: { label: 'Needs Clarification', bg: '#FFFBEB', fg: '#AD5918', border: '#FDE68A' },
-    clarification_sent: { label: 'Clarification Sent', bg: '#F0F9FF', fg: '#0369A1', border: '#BAE6FD' },
-    customer_replied: { label: 'Customer Replied', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
-    requirements_confirmed: { label: 'Requirements Confirmed', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
-    qualified: { label: 'Qualified', bg: '#EFF6FF', fg: '#2563EB', border: '#BFDBFE' },
-    on_hold: { label: 'On Hold', bg: '#F3F4F6', fg: '#6B7280', border: '#D1D5DB' },
-    declined: { label: 'Declined', bg: '#FEF2F2', fg: '#CC3340', border: '#FECACA' },
-    duplicate: { label: 'Duplicate', bg: '#F3F4F6', fg: '#6B7280', border: '#D1D5DB' },
+    processing: { label: 'Processing', bg: '#FFFBEB', fg: '#AD5918', border: '#FDE68A' },
+    completed: { label: 'Completed', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
+    failed: { label: 'Failed', bg: '#FEF2F2', fg: '#CC3340', border: '#FECACA' },
   };
   const b = map[status] ?? map.new;
   return (
@@ -435,7 +424,7 @@ export default function InquiryDetailPage({
   const owner = users.find((u) => u.id === inquiry.ownerId);
   const category = demo.categories.find((c) => c.id === inquiry.categoryId);
   const requirementVersion = requirementVersions[0];
-  const stageIndex = getStageIndex(inquiry.status);
+  const stageIndex = getStageIndex(inquiry.processing_status);
 
   // Missing required fields
   const missingRequired = inquiryFields.filter((f) => f.isRequired && f.status === 'missing');
@@ -453,10 +442,10 @@ export default function InquiryDetailPage({
   const timelineEvents: TimelineEvent[] = [
     { id: 'ev1', timestamp: inquiry.createdAt, label: 'Inquiry received via email', color: 'var(--accent)' },
     { id: 'ev2', timestamp: '2026-09-15T09:10:00Z', label: 'AI extracted 11 fields from customer message', color: '#A21CAF' },
-    ...(inquiry.status !== 'new'
+    ...(inquiry.processing_status !== 'new'
       ? [{ id: 'ev3', timestamp: '2026-09-15T09:15:00Z', label: 'Clarification questions generated', color: '#A21CAF' }]
       : []),
-    ...(inquiry.status === 'requirements_confirmed' || inquiry.status === 'qualified'
+    ...(inquiry.processing_status === 'completed' || inquiry.processing_status === 'processing'
       ? [
           { id: 'ev4', timestamp: '2026-09-15T14:45:00Z', label: 'Customer replied with additional details', color: 'var(--success)' },
           { id: 'ev5', timestamp: '2026-09-16T11:30:00Z', label: 'Requirements confirmed (v1)', color: 'var(--success)' },
@@ -492,12 +481,9 @@ export default function InquiryDetailPage({
   // Next action determination
   const nextActionMap: Record<string, string> = {
     new: 'Extract requirements from customer message',
-    needs_clarification: 'Send clarification questions to customer',
-    clarification_sent: 'Wait for customer response',
-    customer_replied: 'Review and confirm requirements',
-    requirements_confirmed: 'Match suppliers and create RFQ batch',
-    qualified: 'Create RFQ batch for suppliers',
-    on_hold: 'Resume inquiry processing',
+    processing: 'Review and process inquiry',
+    completed: 'Inquiry processing complete',
+    failed: 'Review error and retry',
   };
 
   // Missing fields for context panel
@@ -527,7 +513,7 @@ export default function InquiryDetailPage({
                 {customer?.contactName ?? 'Unknown Customer'}
               </h1>
               <ChannelBadge channel={conversation.channel} />
-              <StatusBadge status={inquiry.status} />
+              <StatusBadge status={inquiry.processing_status} />
               <UrgencyBadge urgency={inquiry.urgency} />
             </div>
             <div className="flex items-center gap-4 flex-wrap">
@@ -735,7 +721,7 @@ export default function InquiryDetailPage({
               </Card>
 
               {/* Clarification Email Draft */}
-              {inquiry.status === 'needs_clarification' && (
+              {inquiry.processing_status === 'processing' && (
                 <Card title="Clarification Email Draft">
                   <div className="space-y-3">
                     <div
@@ -832,7 +818,7 @@ export default function InquiryDetailPage({
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Next Action</span>
                 <span className="text-[12px] font-medium text-right max-w-[180px]" style={{ color: 'var(--text)' }}>
-                  {nextActionMap[inquiry.status] ?? 'Review inquiry'}
+                  {nextActionMap[inquiry.processing_status] ?? 'Review inquiry'}
                 </span>
               </div>
               {missingFields.length > 0 && (
@@ -990,7 +976,7 @@ export default function InquiryDetailPage({
 
           {/* 13. Primary Action Button */}
           <div className="space-y-3">
-            {inquiry.status === 'new' && (
+            {inquiry.processing_status === 'new' && (
               <button
                 onClick={() => advanceInquiryStatus('needs_clarification')}
                 className="w-full rounded-lg px-4 py-3 text-[14px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
@@ -999,7 +985,7 @@ export default function InquiryDetailPage({
                 Start Qualification
               </button>
             )}
-            {inquiry.status === 'needs_clarification' && (
+            {inquiry.processing_status === 'processing' && (
               <button
                 onClick={() => advanceInquiryStatus('clarification_sent')}
                 className="w-full rounded-lg px-4 py-3 text-[14px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
@@ -1008,7 +994,7 @@ export default function InquiryDetailPage({
                 Send Clarification
               </button>
             )}
-            {inquiry.status === 'clarification_sent' && (
+            {inquiry.processing_status === 'processing' && (
               <button
                 onClick={() => advanceInquiryStatus('customer_replied')}
                 className="w-full rounded-lg px-4 py-3 text-[14px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
@@ -1017,7 +1003,7 @@ export default function InquiryDetailPage({
                 Mark Customer Replied
               </button>
             )}
-            {inquiry.status === 'customer_replied' && (
+            {inquiry.processing_status === 'processing' && (
               <button
                 onClick={() => advanceInquiryStatus('requirements_confirmed')}
                 className="w-full rounded-lg px-4 py-3 text-[14px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
@@ -1026,7 +1012,7 @@ export default function InquiryDetailPage({
                 Confirm Requirements
               </button>
             )}
-            {inquiry.status === 'requirements_confirmed' && (
+            {inquiry.processing_status === 'processing' && (
               <button
                 onClick={() => advanceInquiryStatus('qualified')}
                 className="w-full rounded-lg px-4 py-3 text-[14px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
@@ -1035,7 +1021,7 @@ export default function InquiryDetailPage({
                 Find Suppliers
               </button>
             )}
-            {inquiry.status === 'qualified' && (
+            {inquiry.processing_status === 'processing' && (
               <button
                 onClick={() => setActiveTab('suppliers')}
                 className="w-full rounded-lg px-4 py-3 text-[14px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
@@ -1044,7 +1030,7 @@ export default function InquiryDetailPage({
                 Create RFQ Batch
               </button>
             )}
-            {inquiry.status === 'on_hold' && (
+            {inquiry.processing_status === 'processing' && (
               <button
                 onClick={() => advanceInquiryStatus('requirements_confirmed')}
                 className="w-full rounded-lg px-4 py-3 text-[14px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"

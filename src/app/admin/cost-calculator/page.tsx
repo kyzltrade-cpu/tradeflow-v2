@@ -158,7 +158,7 @@ export default function CostCalculatorPage() {
       const { data: userData } = await supabase
         .from('users')
         .select('company_id')
-        .eq('auth_user_id', user.id)
+        .eq('email', user.email)
         .single();
 
       if (!userData) return;
