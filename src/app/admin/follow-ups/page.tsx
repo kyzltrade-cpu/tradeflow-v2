@@ -229,6 +229,40 @@ export default function FollowUpsPage() {
                 <StepTimeline steps={fu.steps} currentStep={fu.currentStep} />
               </div>
 
+              {/* AI Draft Preview */}
+              {fu.status === 'active' && (
+                <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ background: '#DBEAFE', color: '#1D4ED8' }}>
+                      🤖 AI Draft
+                    </span>
+                    <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                      {t('Preview — edit before approving', '预览——批准前可编辑')}
+                    </span>
+                  </div>
+                  <div
+                    className="rounded-[4px] border p-3 text-[12px] leading-relaxed whitespace-pre-wrap"
+                    style={{ background: 'var(--surface-alt)', borderColor: 'var(--border)', color: 'var(--text)' }}
+                  >
+                    {fu.steps[fu.currentStep]?.action || 'Draft message will appear here...'}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      className="rounded-[3px] px-2 py-1 text-[11px]"
+                      style={{ color: 'var(--accent)' }}
+                    >
+                      {t('Edit Draft', '编辑草稿')}
+                    </button>
+                    <button
+                      className="rounded-[3px] px-2 py-1 text-[11px]"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {t('View in Draft Queue', '在草稿队列中查看')}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Action buttons */}
               {fu.status === 'active' && (
                 <div className="border-t px-4 py-3 flex flex-wrap gap-2" style={{ borderColor: 'var(--border)' }}>
@@ -244,7 +278,7 @@ export default function FollowUpsPage() {
                     className="rounded-lg px-4 py-2 text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
                     style={{ background: 'var(--accent)' }}
                   >
-                    {t('Run Next Step', '执行下一步')}
+                    {t('✓ Approve & Send', '✓ 批准并发送')}
                   </button>
                   <button
                     onClick={handleCancel}

@@ -244,6 +244,102 @@ function InternalReviewTab() {
         </Card>
       )}
 
+      {/* Validation with Citations */}
+      <Card title="Pre-Send Validation" titleZh="发送前验证">
+        <div className="space-y-3">
+          {/* Blocking issues */}
+          {quote.internalView.warnings.length > 0 ? (
+            <div className="rounded-[4px] border-l-4 px-3 py-2" style={{ background: '#FEF2F2', borderColor: '#EF4444' }}>
+              <p className="text-[12px] font-medium" style={{ color: '#991B1B' }}>
+                🔴 {t('Blocking Issues', '阻断问题')}: {quote.internalView.warnings.length}
+              </p>
+              <p className="text-[11px] mt-1" style={{ color: '#B91C1C' }}>
+                {t('Resolve these before sending', '发送前请解决这些问题')}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-[4px] border-l-4 px-3 py-2" style={{ background: '#D1FAE5', borderColor: '#10B981' }}>
+              <p className="text-[12px] font-medium" style={{ color: '#065F46' }}>
+                ✅ {t('All checks passed', '所有检查通过')}
+              </p>
+            </div>
+          )}
+
+          {/* Citation table */}
+          <div>
+            <p className="text-[11px] font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
+              {t('Price Citations', '价格来源')} — {t('Every price must cite its source', '每个价格必须注明来源')}
+            </p>
+            <div className="rounded-[4px] border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="border-b" style={{ background: 'var(--surface-alt)', borderColor: 'var(--border)' }}>
+                    <th className="px-3 py-1.5 text-left font-medium" style={{ color: 'var(--text-muted)' }}>{t('Field', '字段')}</th>
+                    <th className="px-3 py-1.5 text-left font-medium" style={{ color: 'var(--text-muted)' }}>{t('Value', '值')}</th>
+                    <th className="px-3 py-1.5 text-left font-medium" style={{ color: 'var(--text-muted)' }}>{t('Source', '来源')}</th>
+                    <th className="px-3 py-1.5 text-center font-medium" style={{ color: 'var(--text-muted)' }}>{t('Confidence', '置信度')}</th>
+                    <th className="px-3 py-1.5 text-left font-medium" style={{ color: 'var(--text-muted)' }}>{t('Status', '状态')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { field: 'Unit Price', value: formatCurrency(3.85), source: 'Supplier Quote (SSW-2026-112)', confidence: 95, status: 'confirmed' },
+                    { field: 'Quantity', value: '10,000 units', source: 'Customer email', confidence: 100, status: 'confirmed' },
+                    { field: 'Exchange Rate', value: '1 USD = 7.82 HKD', source: 'Exchange rate API', confidence: 99, status: 'confirmed' },
+                    { field: 'Freight', value: formatCurrency(0.12), source: 'Internal estimate', confidence: 70, status: 'inferred' },
+                    { field: 'Margin', value: '18.5%', source: 'Company policy', confidence: 100, status: 'confirmed' },
+                  ].map((row, i) => (
+                    <tr key={i} className="border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
+                      <td className="px-3 py-1.5 font-medium" style={{ color: 'var(--text)' }}>{row.field}</td>
+                      <td className="px-3 py-1.5 font-semibold" style={{ color: 'var(--text)' }}>{row.value}</td>
+                      <td className="px-3 py-1.5">
+                        <span
+                          className="rounded px-1.5 py-0.5 text-[10px]"
+                          style={{
+                            background: row.source.includes('Customer') ? '#DBEAFE' : row.source.includes('Supplier') ? '#D1FAE5' : row.source.includes('estimate') ? '#FEF3C7' : '#F3F4F6',
+                            color: row.source.includes('Customer') ? '#1D4ED8' : row.source.includes('Supplier') ? '#065F46' : row.source.includes('estimate') ? '#D97706' : '#6B7280'
+                          }}
+                        >
+                          {row.source}
+                        </span>
+                      </td>
+                      <td className="px-3 py-1.5 text-center">
+                        <span
+                          className="font-medium"
+                          style={{ color: row.confidence >= 90 ? '#10B981' : row.confidence >= 70 ? '#F59E0B' : '#EF4444' }}
+                        >
+                          {row.confidence}%
+                        </span>
+                      </td>
+                      <td className="px-3 py-1.5">
+                        <span
+                          className="rounded px-1.5 py-0.5 text-[10px]"
+                          style={{
+                            background: row.status === 'confirmed' ? '#D1FAE5' : row.status === 'inferred' ? '#FEF3C7' : '#FEE2E2',
+                            color: row.status === 'confirmed' ? '#065F46' : row.status === 'inferred' ? '#D97706' : '#991B1B'
+                          }}
+                        >
+                          {row.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Low confidence warning */}
+          {quote.internalView.costBreakdown.some(l => l.source === 'external_estimate') && (
+            <div className="rounded-[4px] px-3 py-2" style={{ background: '#FEF3C7' }}>
+              <p className="text-[11px] font-medium" style={{ color: '#92400E' }}>
+                ⚠️ {t('Some costs are estimates — verify with actual supplier quotes before sending', '部分成本为估算——发送前请与实际供应商报价核实')}
+              </p>
+            </div>
+          )}
+        </div>
+      </Card>
+
       {/* Supplier info */}
       {supplier && (
         <Card title="Supplier" titleZh="供应商">
