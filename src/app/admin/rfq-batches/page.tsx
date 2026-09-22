@@ -79,7 +79,7 @@ export default function RfqBatchesPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-[12px]">
             <div>
               <div className="font-semibold" style={{ color: 'var(--text-muted)' }}>Opportunity</div>
-              <div className="mt-0.5">{opportunity?.title || 'Vacuum Bottle RFQ'}</div>
+              <div className="mt-0.5">{opportunity?.referenceNumber || 'TF-2026-0193-OPP'}</div>
             </div>
             <div>
               <div className="font-semibold" style={{ color: 'var(--text-muted)' }}>Deadline</div>
@@ -124,7 +124,7 @@ export default function RfqBatchesPage() {
             return (
               <div key={rfq.id} className="grid grid-cols-12 gap-2 px-4 py-3 items-center text-[13px] hover:bg-gray-50/50">
                 <div className="col-span-3">
-                  <div className="font-medium">{supplier?.companyName || 'Unknown Supplier'}</div>
+                  <div className="font-medium">{supplier?.name || 'Unknown Supplier'}</div>
                   <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{supplier?.contactName || ''}</div>
                 </div>
                 <div className="col-span-2">

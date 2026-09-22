@@ -86,7 +86,7 @@ export default function RfqBatchDetailPage({ params }: { params: Promise<{ id: s
             <StatusBadge status={rfqBatch.status} />
           </div>
           <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-            {opportunity?.title || 'Vacuum Bottle RFQ'} — {respondedCount}/{rfqs.length} suppliers responded
+            {opportunity?.referenceNumber || 'TF-BATCH-0042'} — {respondedCount}/{rfqs.length} suppliers responded
           </p>
         </div>
         <div className="flex gap-2">
@@ -117,11 +117,11 @@ export default function RfqBatchDetailPage({ params }: { params: Promise<{ id: s
                 return (
                   <div key={rfq.id} className="flex items-center gap-4 p-3 rounded-lg border" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
                     <div className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-bold text-white shrink-0" style={{ background: '#0A6E5C' }}>
-                      {supplier?.companyName?.charAt(0) || '?'}
+                      {supplier?.name?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-semibold">{supplier?.companyName || 'Unknown'}</span>
+                        <span className="text-[13px] font-semibold">{supplier?.name || 'Unknown'}</span>
                         <StatusBadge status={rfq.status} />
                       </div>
                       <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>

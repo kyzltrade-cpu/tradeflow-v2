@@ -55,22 +55,16 @@ const NAV_GROUPS: NavGroup[] = [
         icon: 'M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L12 12.75 6.429 9.75m11.142 0l4.179 2.25-9.75 5.25-9.75-5.25 4.179-2.25',
       },
       {
-        href: '/admin/outbound',
-        en: 'Draft Queue',
-        zh: '草稿队列',
-        icon: 'M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5',
+        href: '/admin/draft-review',
+        en: 'Draft Review',
+        zh: '草稿审核',
+        icon: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z',
       },
       {
         href: '/admin/follow-ups',
         en: 'Follow-ups',
         zh: '跟进',
         icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z',
-      },
-      {
-        href: '/admin/cost-calculator',
-        en: 'Cost Calculator',
-        zh: '成本计算器',
-        icon: 'M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008H18v-.008zm0 2.25H18V13.5zm0 2.25H18v-.008zm0 2.25H18V18z',
       },
     ],
   },
@@ -94,6 +88,18 @@ const NAV_GROUPS: NavGroup[] = [
         en: 'Knowledge Base',
         zh: '知识库',
         icon: 'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25',
+      },
+      {
+        href: '/admin/upload',
+        en: 'Upload',
+        zh: '上传',
+        icon: 'M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5',
+      },
+      {
+        href: '/admin/analytics',
+        en: 'Analytics',
+        zh: '分析',
+        icon: 'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z',
       },
       {
         href: '/admin/settings',
@@ -194,7 +200,7 @@ function Sidebar({ collapsed, onClose }: { collapsed: boolean; onClose: () => vo
 
         {/* User badge */}
         <div className="border-t px-3 py-3" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2">
+          <Link href="/admin/onboarding" className="flex items-center gap-2 group">
             <div
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
               style={{ background: '#6366F1' }}
@@ -211,7 +217,7 @@ function Sidebar({ collapsed, onClose }: { collapsed: boolean; onClose: () => vo
                 </div>
               </div>
             )}
-          </div>
+          </Link>
         </div>
       </aside>
     </>
