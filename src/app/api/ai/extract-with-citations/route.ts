@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       company_id: companyId,
       inquiry_id: inquiryId,
       run_type: 'extraction_with_citations',
-      model: 'gpt-4o-mini',
+      model: 'nvidia/llama-3.1-nemotron-70b-instruct',
       input_tokens: 0,
       output_tokens: 0,
       confidence: fields.reduce((sum, f) => sum + f.confidence, 0) / fields.length,
