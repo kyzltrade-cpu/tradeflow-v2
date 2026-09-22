@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TradeFlow v2",
-  description: "AI-assisted inquiry-to-quote operating system",
+  title: 'TradeFlow — AI-Powered Trading Intelligence',
+  description: 'The AI copilot for HK & SZ trading companies. Forward RFQs, get cited quotes in hours, not days.',
+  icons: { icon: '/favicon.ico' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
