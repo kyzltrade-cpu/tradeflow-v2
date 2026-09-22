@@ -51,7 +51,6 @@ function ChannelBadge({ channel }: { channel: string }) {
   const map: Record<string, { label: string; dot: string; bg: string; fg: string; border: string }> = {
     email: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
     whatsapp: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
-    wechat: { label: 'Live email integration', dot: '#22C55E', bg: '#F0FDF4', fg: '#166534', border: '#BBF7D0' },
     manual: { label: 'Manual capture', dot: '#EAB308', bg: '#FEFCE8', fg: '#854D0E', border: '#FEF08A' },
     demo: { label: 'Simulated demo data', dot: '#3B82F6', bg: '#EFF6FF', fg: '#1E40AF', border: '#BFDBFE' },
   };

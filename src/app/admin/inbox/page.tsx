@@ -9,7 +9,7 @@ import { formatDate, formatDateTime } from '@/lib/utils';
 
 interface InboxMessage {
   id: string;
-  channel: 'email' | 'whatsapp' | 'wechat';
+  channel: 'email' | 'whatsapp';
   from: string;
   fromEmail: string;
   to: string;
@@ -139,44 +139,6 @@ Li Chen`,
     },
   },
   {
-    id: 'inbox4',
-    channel: 'wechat',
-    from: 'Zhou Wei',
-    fromEmail: 'zhouwei@yiwudrink.com',
-    to: 'Priya Sharma',
-    toEmail: 'priya@tradeflow-sourcing.com',
-    subject: 'Re: RFQ #TF-BATCH-0042: 500ml Stainless Steel Vacuum Bottle',
-    date: '2026-09-18T10:30:00Z',
-    body: `Dear TradeFlow Team,
-
-We are happy to quote for your vacuum bottle project.
-
-Unit Price: USD 3.90/pc FOB Yiwu
-Lead Time: 20 days after confirmation
-MOQ: 500 pcs
-Payment: 100% T/T in advance (first order)
-
-We hold ISO 9001, FDA, and BSCI certifications. Silk screen and laser engraving available. Gift box packaging at $0.35/pc.
-
-We can send samples within 3 days. Sample cost $5/pc, refundable on order.
-
-Looking forward to working with you.
-
-Zhou Wei
-Yiwu Drinkware Factory`,
-    unread: false,
-    category: 'supplier',
-    attachments: [
-      { name: 'Product-Catalog-2026.pdf', size: '3.8 MB' },
-    ],
-    relatedInquiryId: 'inq1',
-    workflowState: {
-      stage: 'Supplier Response Received',
-      nextAction: 'Review and normalize response',
-      status: 'responded',
-    },
-  },
-  {
     id: 'inbox5',
     channel: 'email',
     from: 'Hans Müller',
@@ -245,13 +207,6 @@ const CHANNEL_CONFIG: Record<string, { label: string; color: string; bg: string;
     border: '#BBF7D0',
     icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z',
   },
-  wechat: {
-    label: 'WeChat',
-    color: '#07C160',
-    bg: '#F0FDF4',
-    border: '#BBF7D0',
-    icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z',
-  },
 };
 
 function ChannelBadge({ channel }: { channel: string }) {
@@ -285,7 +240,7 @@ function WorkflowBadge({ stage }: { stage: string }) {
 /* ── Category filter tabs ─────────────────────────────────────────────── */
 
 type CategoryTab = 'all' | 'unread' | 'inquiries' | 'suppliers';
-type ChannelTab = 'all' | 'email' | 'whatsapp' | 'wechat';
+type ChannelTab = 'all' | 'email' | 'whatsapp';
 
 /* ── Page ─────────────────────────────────────────────────────────────── */
 
@@ -316,20 +271,17 @@ export default function InboxPage() {
     { key: 'all', en: 'All Channels', zh: '所有渠道' },
     { key: 'email', en: 'Email', zh: '邮件' },
     { key: 'whatsapp', en: 'WhatsApp', zh: 'WhatsApp' },
-    { key: 'wechat', en: 'WeChat', zh: '微信' },
   ];
 
   const channelDot: Record<string, string> = {
     email: '#2563EB',
     whatsapp: '#25D366',
-    wechat: '#07C160',
   };
 
   const channelCounts = {
     all: MOCK_MESSAGES.length,
     email: MOCK_MESSAGES.filter((m) => m.channel === 'email').length,
     whatsapp: MOCK_MESSAGES.filter((m) => m.channel === 'whatsapp').length,
-    wechat: MOCK_MESSAGES.filter((m) => m.channel === 'wechat').length,
   };
 
   return (

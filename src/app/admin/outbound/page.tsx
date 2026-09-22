@@ -8,7 +8,7 @@ import { useDemo } from '@/lib/demo-store';
 
 interface OutboundMessage {
   id: string;
-  channel: 'email' | 'whatsapp' | 'wechat';
+  channel: 'email' | 'whatsapp';
   to_address: string;
   subject: string;
   body: string;
@@ -431,12 +431,10 @@ function ChannelBadge({ channel }: { channel: string }) {
   const colors: Record<string, string> = {
     email: '#2563EB',
     whatsapp: '#25D366',
-    wechat: '#07C160'
   };
   const labels: Record<string, string> = {
     email: '📧',
     whatsapp: '💬',
-    wechat: '💚'
   };
   return (
     <span className="text-[14px]" title={channel}>
