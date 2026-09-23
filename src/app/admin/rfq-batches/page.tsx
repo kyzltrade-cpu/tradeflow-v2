@@ -1,156 +1,193 @@
 'use client';
 
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useDemo } from '@/lib/demo-store';
 import { useLang } from '@/lib/lang';
 import { formatDate } from '@/lib/utils';
 
-const STATUS_MAP: Record<string, { label: string; zh: string; bg: string; fg: string; border: string }> = {
-  draft: { label: 'Draft', zh: '草稿', bg: '#F3F4F6', fg: '#6B7280', border: '#D1D5DB' },
-  pending_approval: { label: 'Pending Approval', zh: '待审批', bg: '#FFFBEB', fg: '#AD5918', border: '#FDE68A' },
-  approved: { label: 'Approved', zh: '已审批', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
-  sending: { label: 'Sending', zh: '发送中', bg: '#F0F9FF', fg: '#0369A1', border: '#BAE6FD' },
-  sent: { label: 'Sent', zh: '已发送', bg: '#EFF6FF', fg: '#2563EB', border: '#BFDBFE' },
-  partial: { label: 'Partial Responses', zh: '部分回覆', bg: '#FEF3C7', fg: '#D97706', border: '#FDE68A' },
-  complete: { label: 'Complete', zh: '已完成', bg: '#ECFDF5', fg: '#038153', border: '#A7F3D0' },
-  expired: { label: 'Expired', zh: '已过期', bg: '#FEF2F2', fg: '#CC3340', border: '#FECACA' },
-};
-
-function StatusBadge({ status }: { status: string }) {
-  const s = STATUS_MAP[status] ?? STATUS_MAP.draft;
-  return (
-    <span
-      className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold"
-      style={{ background: s.bg, color: s.fg, border: `1px solid ${s.border}` }}
-    >
-      {s.label}
-    </span>
-  );
+interface RfqRow {
+  id: string;
+  supplier_id: string;
+  status: string;
+  created_at: string;
+  response_received_at?: string;
+  supplier: { id: string; legal_name: string; contact_name?: string } | null;
+  responses: any[];
 }
 
-function ResponseBar({ responded, total }: { responded: number; total: number }) {
-  const pct = total > 0 ? (responded / total) * 100 : 0;
+interface Batch {
+  id: string;
+  reference_number: string;
+  opportunity_id?: string;
+  status: string;
+  response_deadline?: string;
+  created_at: string;
+  approved_at?: string;
+  rfqs: RfqRow[];
+  responded: number;
+}
+
+const STATUS_MAP: Record<string, { label: string; zh: string; bg: string; fg: string }> = {
+  draft: { label: 'Draft', zh: '草稿', bg: '#F3F4F6', fg: '#6B7280' },
+  approved: { label: 'Approved', zh: '已审批', bg: '#ECFDF5', fg: '#038153' },
+  sent: { label: 'Sent', zh: '已发送', bg: '#EFF6FF', fg: '#2563EB' },
+  partially_received: { label: 'Partial', zh: '部分回覆', bg: '#FEF3C7', fg: '#D97706' },
+  received: { label: 'All Received', zh: '全部回覆', bg: '#ECFDF5', fg: '#038153' },
+  closed: { label: 'Closed', zh: '已关闭', bg: '#F3F4F6', fg: '#6B7280' },
+};
+
+const RFQ_STATUS_MAP: Record<string, { label: string; zh: string; bg: string; fg: string }> = {
+  draft: { label: 'Draft', zh: '草稿', bg: '#F3F4F6', fg: '#6B7280' },
+  sent: { label: 'Sent', zh: '已发送', bg: '#EFF6FF', fg: '#2563EB' },
+  followed_up: { label: 'Followed Up', zh: '已跟进', bg: '#FEF3C7', fg: '#D97706' },
+  response_received: { label: 'Responded', zh: '已回覆', bg: '#ECFDF5', fg: '#038153' },
+  cancelled: { label: 'Cancelled', zh: '已取消', bg: '#FEF2F2', fg: '#CC3340' },
+};
+
+function Badge({ status, map }: { status: string; map: Record<string, any> }) {
+  const { t } = useLang();
+  const s = map[status] ?? { label: status, zh: status, bg: '#F3F4F6', fg: '#6B7280' };
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: '#E5EDF5' }}>
-        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: pct === 100 ? '#038153' : '#D97706' }} />
-      </div>
-      <span className="text-[11px] font-medium" style={{ color: '#50617A' }}>{responded}/{total}</span>
-    </div>
+    <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold" style={{ background: s.bg, color: s.fg }}>
+      {t(s.label, s.zh)}
+    </span>
   );
 }
 
 export default function RfqBatchesPage() {
   const { t } = useLang();
-  const { rfqBatch, suppliers, opportunity } = useDemo();
+  const [batches, setBatches] = useState<Batch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const rfqs = rfqBatch.rfqs || [];
-  const respondedCount = rfqs.filter((r: { status: string }) => r.status === 'responded').length;
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/rfq-batches', { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to load RFQ batches');
+      const data = await res.json();
+      setBatches(data.batches || []);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const sendBatch = async (id: string) => {
+    setSending(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/rfq-batches/${id}/send`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Send failed');
+      await load();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSending(null);
+    }
+  };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[20px] md:text-[24px] font-semibold tracking-[-0.5px]">{t('RFQ Batches', '供应商询价批次')}</h1>
-          <p className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>
-            {t('Track supplier RFQs, responses, and disclosure settings', '追踪供应商询价、回覆和披露设置')}
-          </p>
-        </div>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <div>
+        <h1 className="text-[22px] font-bold" style={{ color: 'var(--text)' }}>
+          {t('RFQ Batches', '供应商询价批次')}
+        </h1>
+        <p className="mt-1 text-[13px]" style={{ color: 'var(--text-muted)' }}>
+          {t('Track supplier RFQs, responses, and disclosure settings.', '追踪供应商询价、回覆和披露设置。')}
+        </p>
       </div>
 
-      {/* Batch card */}
-      <div className="rounded-[4px] border overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-        {/* Batch header */}
-        <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <Link href={`/admin/rfq-batches/${rfqBatch.id}`} className="text-[15px] font-semibold hover:underline" style={{ color: 'var(--accent)' }}>
-                {rfqBatch.referenceNumber}
-              </Link>
-              <StatusBadge status={rfqBatch.status} />
-            </div>
-            <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              {formatDate(rfqBatch.createdAt)}
-            </div>
-          </div>
+      {error && (
+        <div className="rounded-[4px] border px-4 py-3 text-[13px]" style={{ background: '#FEF2F2', borderColor: '#FECACA', color: '#CC3340' }}>
+          {error}
+        </div>
+      )}
 
-          {/* Batch info grid */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-[12px]">
-            <div>
-              <div className="font-semibold" style={{ color: 'var(--text-muted)' }}>Opportunity</div>
-              <div className="mt-0.5">{opportunity?.referenceNumber || 'TF-2026-0193-OPP'}</div>
-            </div>
-            <div>
-              <div className="font-semibold" style={{ color: 'var(--text-muted)' }}>Deadline</div>
-              <div className="mt-0.5">{formatDate(rfqBatch.responseDeadline)}</div>
-            </div>
-            <div>
-              <div className="font-semibold" style={{ color: 'var(--text-muted)' }}>Suppliers</div>
-              <div className="mt-0.5">{rfqs.length} contacted</div>
-            </div>
-            <div>
-              <div className="font-semibold" style={{ color: 'var(--text-muted)' }}>Responses</div>
-              <div className="mt-0.5"><ResponseBar responded={respondedCount} total={rfqs.length} /></div>
-            </div>
-            <div>
-              <div className="font-semibold" style={{ color: 'var(--text-muted)' }}>Disclosure</div>
-              <div className="mt-0.5 flex flex-wrap gap-1">
-                {rfqBatch.disclosurePolicy?.map((p: string) => (
-                  <span key={p} className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ background: '#EFF6FF', color: '#2563EB' }}>
-                    {p.replace(/_/g, ' ')}
-                  </span>
+      {loading ? (
+        <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>{t('Loading...', '加载中...')}</p>
+      ) : batches.length === 0 ? (
+        <div className="rounded-[4px] border p-12 text-center" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+          <h3 className="text-[15px] font-semibold" style={{ color: 'var(--text)' }}>
+            {t('No RFQ batches yet', '暂无询价批次')}
+          </h3>
+          <p className="mt-2 text-[13px]" style={{ color: 'var(--text-muted)' }}>
+            {t('Create a batch from an opportunity to start sourcing.', '从商机创建批次开始寻源。')}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {batches.map((batch) => (
+            <div key={batch.id} className="rounded-[4px] border overflow-hidden" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}>
+              <div className="p-4 border-b" style={{ borderColor: 'var(--border)' }}>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Link href={`/admin/rfq-batches/${batch.id}`} className="text-[15px] font-semibold hover:underline" style={{ color: 'var(--accent)' }}>
+                      {batch.reference_number}
+                    </Link>
+                    <Badge status={batch.status} map={STATUS_MAP} />
+                    {batch.status === 'draft' && (
+                      <button
+                        onClick={() => sendBatch(batch.id)}
+                        disabled={sending === batch.id}
+                        className="rounded-lg px-3 py-1.5 text-[12px] font-semibold text-white disabled:opacity-50"
+                        style={{ background: 'var(--accent)' }}
+                      >
+                        {sending === batch.id ? t('Sending...', '发送中...') : t('Approve & Send', '批准并发送')}
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                    {formatDate(batch.created_at)}
+                    {batch.response_deadline && ` · ${t('deadline', '截止')} ${formatDate(batch.response_deadline)}`}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3 text-[12px]">
+                  <div>
+                    <span className="font-semibold" style={{ color: 'var(--text-muted)' }}>{t('Suppliers', '供应商')} </span>
+                    <span style={{ color: 'var(--text)' }}>{batch.rfqs.length}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold" style={{ color: 'var(--text-muted)' }}>{t('Responded', '已回覆')} </span>
+                    <span style={{ color: 'var(--text)' }}>{batch.responded}/{batch.rfqs.length}</span>
+                  </div>
+                  <div>
+                    <span className="font-semibold" style={{ color: 'var(--text-muted)' }}>{t('Created by', '创建人')} </span>
+                    <span style={{ color: 'var(--text)' }}>{batch.approved_at ? t('approved', '已批准') : t('draft', '草稿')}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+                {batch.rfqs.map((rfq) => (
+                  <div key={rfq.id} className="grid grid-cols-12 gap-2 px-4 py-3 items-center text-[13px]">
+                    <div className="col-span-5">
+                      <div className="font-medium" style={{ color: 'var(--text)' }}>
+                        {rfq.supplier?.legal_name || 'Unknown Supplier'}
+                      </div>
+                      {rfq.supplier?.contact_name && (
+                        <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{rfq.supplier.contact_name}</div>
+                      )}
+                    </div>
+                    <div className="col-span-3"><Badge status={rfq.status} map={RFQ_STATUS_MAP} /></div>
+                    <div className="col-span-4 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                      {rfq.response_received_at
+                        ? `${t('Responded', '已回覆')} ${formatDate(rfq.response_received_at)}`
+                        : formatDate(rfq.created_at)}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
-          </div>
+          ))}
         </div>
-
-        {/* Supplier list */}
-        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
-          <div className="grid grid-cols-12 gap-2 px-4 py-2 text-[11px] font-semibold uppercase tracking-wider" style={{ background: 'var(--bg)', color: 'var(--text-muted)' }}>
-            <div className="col-span-3">Supplier</div>
-            <div className="col-span-2">Status</div>
-            <div className="col-span-2">Response Time</div>
-            <div className="col-span-2">Confidence</div>
-            <div className="col-span-3">Actions</div>
-          </div>
-          {rfqs.map((rfq: { id: string; supplierId: string; status: string; responseReceivedAt?: string; createdAt: string }) => {
-            const supplier = suppliers.find((s: { id: string }) => s.id === rfq.supplierId);
-            const responseTime = rfq.responseReceivedAt
-              ? Math.round((new Date(rfq.responseReceivedAt).getTime() - new Date(rfq.createdAt).getTime()) / (1000 * 60 * 60))
-              : null;
-
-            return (
-              <div key={rfq.id} className="grid grid-cols-12 gap-2 px-4 py-3 items-center text-[13px] hover:bg-gray-50/50">
-                <div className="col-span-3">
-                  <div className="font-medium">{supplier?.name || 'Unknown Supplier'}</div>
-                  <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{supplier?.contactName || ''}</div>
-                </div>
-                <div className="col-span-2">
-                  <StatusBadge status={rfq.status} />
-                </div>
-                <div className="col-span-2 text-[12px]" style={{ color: responseTime !== null ? (responseTime <= 24 ? '#038153' : '#D97706') : 'var(--text-muted)' }}>
-                  {responseTime !== null ? `${responseTime}h` : '—'}
-                </div>
-                <div className="col-span-2">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: '#E5EDF5' }}>
-                      <div className="h-full rounded-full" style={{ width: '94%', background: '#038153' }} />
-                    </div>
-                    <span className="text-[11px] font-mono" style={{ color: '#50617A' }}>94%</span>
-                  </div>
-                </div>
-                <div className="col-span-3">
-                  <Link href={`/admin/rfq-batches/${rfqBatch.id}`} className="text-[12px] font-medium hover:underline" style={{ color: 'var(--accent)' }}>
-                    View Details →
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

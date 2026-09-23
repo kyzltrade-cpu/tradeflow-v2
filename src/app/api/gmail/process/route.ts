@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchEmail, markAsRead } from '@/lib/composio/gmail';
 import { createClient } from '@supabase/supabase-js';
+import { pauseFollowUpsForRecipient } from '@/lib/workflow/follow-ups';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,10 +32,13 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (existing) {
+      // Customer reply to an existing inquiry: pause active follow-up sequences
+      const paused = await pauseFollowUpsForRecipient(email.fromEmail).catch(() => ({ paused: 0 }));
       return NextResponse.json({
         success: true,
         inquiryId: existing.id,
         message: 'Already processed',
+        followUpsPaused: paused.paused,
       });
     }
 

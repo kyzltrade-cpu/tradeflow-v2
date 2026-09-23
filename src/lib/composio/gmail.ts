@@ -107,6 +107,47 @@ export async function markAsRead(messageIds: string[]): Promise<void> {
   });
 }
 
+// ─── Send an email ───────────────────────────────────────────
+
+export interface SendEmailResult {
+  success: boolean;
+  messageId?: string;
+  threadId?: string;
+  error?: string;
+}
+
+export async function sendEmail(
+  to: string,
+  subject: string,
+  body: string,
+  isHtml: boolean = false,
+): Promise<SendEmailResult> {
+  try {
+    const composio = getComposio();
+    const result = await composio.tools.execute('GMAIL_SEND_EMAIL', {
+      arguments: {
+        recipient_email: to,
+        subject,
+        body,
+        is_html: isHtml,
+      },
+      userId: COMPOSIO_USER_ID,
+    });
+
+    const data = result.data as any;
+    const response = data?.response_data || data || {};
+    return {
+      success: true,
+      messageId: response.id || response.messageId || '',
+      threadId: response.threadId || '',
+    };
+  } catch (error: any) {
+    const errorMessage = error?.message || 'Unknown error';
+    console.error('Gmail send failed:', errorMessage);
+    return { success: false, error: errorMessage };
+  }
+}
+
 // ─── Helpers ─────────────────────────────────────────────────
 
 function extractName(from: string): string {

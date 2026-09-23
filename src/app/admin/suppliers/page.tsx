@@ -225,20 +225,135 @@ function AddSupplierModal({ open, onClose, onAdded }: { open: boolean; onClose: 
   );
 }
 
+/* ── Capture External Lead Modal ────────────────────────────────────── */
+
+function CaptureLeadModal({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: () => void }) {
+  const { t } = useLang();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [name, setName] = useState('');
+  const [website, setWebsite] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+
+  if (!open) return null;
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '8px 10px',
+    border: '1px solid var(--border)',
+    borderRadius: 4,
+    fontSize: 13,
+    color: 'var(--text)',
+    background: 'var(--surface)',
+    outline: 'none',
+  };
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) { setError('Company name is required'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/suppliers/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          legal_name: name.trim(),
+          website: website.trim() || undefined,
+          contact_name: contactName.trim() || undefined,
+          contact_email: contactEmail.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to capture lead');
+      onAdded();
+      onClose();
+      setName(''); setWebsite(''); setContactName(''); setContactEmail('');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-lg shadow-xl"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b px-5 py-4" style={{ borderColor: 'var(--border)' }}>
+          <div>
+            <h2 className="text-[16px] font-bold" style={{ color: 'var(--text)' }}>
+              {t('Capture External Lead', '收录外部商机')}
+            </h2>
+            <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+              {t('AI will enrich supplier facts from the website.', 'AI 将从网站补充供应商信息。')}
+            </p>
+          </div>
+          <button onClick={onClose} className="text-[18px] font-bold" style={{ color: 'var(--text-muted)' }}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div>
+            <label className="block text-[12px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>
+              Company Name <span style={{ color: '#EF4444' }}>*</span>
+            </label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Ningbo Precision Hardware Co." style={inputStyle} />
+          </div>
+          <div>
+            <label className="block text-[12px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Website</label>
+            <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." style={inputStyle} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[12px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Contact Name</label>
+              <input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Optional" style={inputStyle} />
+            </div>
+            <div>
+              <label className="block text-[12px] font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>Contact Email</label>
+              <input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="Optional" style={inputStyle} />
+            </div>
+          </div>
+
+          {error && <p className="text-[12px] font-medium" style={{ color: '#EF4444' }}>{error}</p>}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-[13px] font-medium" style={{ border: '1px solid var(--border)', color: 'var(--text)' }}>
+              Cancel
+            </button>
+            <button type="submit" disabled={loading} className="rounded-lg px-4 py-2 text-[13px] font-medium text-white disabled:opacity-50" style={{ background: 'var(--accent)' }}>
+              {loading ? t('Capturing...', '处理中...') : t('Capture Lead', '收录商机')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /* ── Suppliers Page ──────────────────────────────────────────────────── */
 
 export default function SuppliersPage() {
   const { t } = useLang();
   const [showModal, setShowModal] = useState(false);
+  const [showLeadModal, setShowLeadModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6" key={refreshKey}>
-      <SuppliersHeader onAdd={() => setShowModal(true)} />
+      <SuppliersHeader onAdd={() => setShowModal(true)} onCapture={() => setShowLeadModal(true)} />
       <SuppliersGrid />
       <AddSupplierModal
         open={showModal}
         onClose={() => setShowModal(false)}
+        onAdded={() => setRefreshKey((k) => k + 1)}
+      />
+      <CaptureLeadModal
+        open={showLeadModal}
+        onClose={() => setShowLeadModal(false)}
         onAdded={() => setRefreshKey((k) => k + 1)}
       />
     </div>
@@ -247,10 +362,10 @@ export default function SuppliersPage() {
 
 /* ── Header ──────────────────────────────────────────────────────────── */
 
-function SuppliersHeader({ onAdd }: { onAdd: () => void }) {
+function SuppliersHeader({ onAdd, onCapture }: { onAdd: () => void; onCapture: () => void }) {
   const { t } = useLang();
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-4 flex-wrap">
       <div>
         <h1 className="text-[22px] font-bold" style={{ color: 'var(--text)' }}>
           {t('Suppliers', '供应商')}
@@ -259,16 +374,28 @@ function SuppliersHeader({ onAdd }: { onAdd: () => void }) {
           {t('Manage your supplier directory and verification status.', '管理供应商目录和验证状态。')}
         </p>
       </div>
-      <button
-        onClick={onAdd}
-        className="flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium text-white transition-all hover:opacity-90 active:scale-[0.98]"
-        style={{ background: 'var(--accent)' }}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        {t('Add Supplier', '添加供应商')}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={onCapture}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium transition-all hover:opacity-90 active:scale-[0.98]"
+          style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+          </svg>
+          {t('Capture Lead', '收录商机')}
+        </button>
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium text-white transition-all hover:opacity-90 active:scale-[0.98]"
+          style={{ background: 'var(--accent)' }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          {t('Add Supplier', '添加供应商')}
+        </button>
+      </div>
     </div>
   );
 }
