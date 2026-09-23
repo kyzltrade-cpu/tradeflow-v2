@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: 'TradeFlow — AI-Powered Trading Intelligence',
-  description: 'The AI copilot for HK & SZ trading companies. Forward RFQs, get cited quotes in hours, not days.',
+  description: 'The AI copilot for HK & SZ trading companies. From inquiry to RFQ to quoted — cited, human-approved, in hours, not days.',
   icons: { icon: '/favicon.ico' },
 };
 

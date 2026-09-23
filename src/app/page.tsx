@@ -12,7 +12,7 @@ const FEATURES = [
   {
     icon: null,
     title: 'Email + WhatsApp Inbox',
-    desc: 'Forward RFQs to your email inbox, or forward them from WhatsApp. TradeFlow extracts every spec, detects gaps, and drafts clarifications in your language.',
+    desc: 'Works over email and WhatsApp — the channels you already use. An inquiry lands in your inbox, and TradeFlow drives it through the whole sourcing pipeline.',
     detail: 'Works with the email and WhatsApp you already use. No new software for your team, customers, or suppliers to learn. Supports English, Chinese, and mixed-language threads.',
   },
   {
@@ -30,20 +30,20 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { num: '01', title: 'Forward the RFQ', desc: 'Send the customer email or WhatsApp message to TradeFlow. That\'s it.' },
-  { num: '02', title: 'AI Extracts & Cites', desc: 'Every spec, quantity, and requirement pulled with source citations.' },
-  { num: '03', title: 'Brain Drafts the Quote', desc: 'Uses your real supplier prices, margins, and certifications.' },
-  { num: '04', title: 'You Approve, Send', desc: 'Review the draft. One click to send to the customer.' },
+  { num: '01', title: 'Inquiry comes in', desc: 'From email or WhatsApp. Every spec, quantity, and requirement is extracted with source citations.' },
+  { num: '02', title: 'Gaps get clarified', desc: 'AI flags missing details and drafts a clarification question in the customer\'s language. You approve, we ask.' },
+  { num: '03', title: 'Suppliers get RFQed', desc: 'A batch RFQ goes to your shortlisted suppliers on their preferred channel. You approve every send.' },
+  { num: '04', title: 'Quote is drafted', desc: 'Responses are compared, landed cost is calculated, and a cited quote is drafted. You approve, one click to send.' },
 ];
 
 const FAQS = [
   {
     q: 'Does it work with the email I already use?',
-    a: 'Yes. Forward any RFQ to your TradeFlow address, or connect your mailbox. There is no new software for your team or your customers to learn.',
+    a: 'Yes. TradeFlow works over your existing mailbox — an inquiry can arrive from a customer or be added in one click. There is no new software for your team, your customers, or your suppliers to learn.',
   },
   {
     q: 'Does it work with WhatsApp?',
-    a: 'Yes. Forward RFQs from WhatsApp in the same way — TradeFlow extracts the specs and routes the reply back through the channel you prefer. Ideal for working with Shenzhen and mainland suppliers who live on WeChat and WhatsApp.',
+    a: 'Yes. TradeFlow works over email and WhatsApp, depending on what the customer or supplier prefers. Specs are extracted the same way, and replies route back through the channel you choose — ideal for Shenzhen and mainland suppliers who live on WeChat and WhatsApp.',
   },
   {
     q: 'Can it handle Chinese and mixed-language emails?',
@@ -103,13 +103,13 @@ export default function LandingPage() {
 
           {/* Headline */}
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.08] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            Forward the RFQ.<br />
-            <span style={{ color: '#0A6E5C' }}>We draft the quote.</span>
+            From inquiry to quote.<br />
+            <span style={{ color: '#0A6E5C' }}>End to end.</span>
           </h1>
 
           {/* Subhead */}
           <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#626260' }}>
-            TradeFlow is the AI copilot for trading companies. It reads your emails, learns your products and suppliers, and generates cited, ready-to-send quotes — in hours, not days.
+            TradeFlow is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, RFQs your suppliers, compares their responses with cited landed costs, and drafts a ready-to-send quote — in hours, not days.
           </p>
 
           {/* CTAs */}
@@ -131,9 +131,9 @@ export default function LandingPage() {
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Everything you need. Nothing you don&apos;t.
             </h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: '#626260' }}>
-              Built for the way traders actually work — email-first, citation-backed, human-approved.
-            </p>
+<p className="text-lg max-w-xl mx-auto" style={{ color: '#626260' }}>
+                  Built for the way traders actually work — citation-backed, human-approved.
+                </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {FEATURES.map((f) => (
@@ -152,10 +152,10 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              From RFQ to quote in 4 steps
+              From inquiry to quote in 4 steps
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#626260' }}>
-              No new software to learn. Just forward your email.
+              The whole sourcing pipeline, with you approving every message.
             </p>
           </div>
           <div className="grid md:grid-cols-4 gap-8">
@@ -189,7 +189,7 @@ export default function LandingPage() {
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>1</div>
                 <div>
                   <div className="text-sm font-semibold">The RFQ arrives</div>
-                  <div className="text-xs" style={{ color: '#9CA3AF' }}>You forward it to TradeFlow, or it lands in your shared inbox</div>
+                  <div className="text-xs" style={{ color: '#9CA3AF' }}>The inquiry lands in your shared inbox</div>
                 </div>
               </div>
               <div className="px-5 py-4 rounded-xl text-sm leading-relaxed" style={{ background: '#F8FAFD', color: '#50617A', border: '1px solid #E5EDF5' }}>

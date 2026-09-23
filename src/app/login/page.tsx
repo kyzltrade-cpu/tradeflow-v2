@@ -42,7 +42,7 @@ export default function LoginPage() {
         </div>
         <div className="relative z-10">
           <h1 className="text-white text-4xl leading-[1.1] tracking-[-0.02em] font-semibold" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            Forward the RFQ.<br />We draft the quote.
+            From inquiry to quote.<br />We draft it end to end.
           </h1>
           <p className="text-white/60 text-base mt-4 max-w-md leading-relaxed">
             The AI copilot for trading companies. Respond to RFQs in hours, not days.
