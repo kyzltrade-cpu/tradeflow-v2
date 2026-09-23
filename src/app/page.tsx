@@ -20,28 +20,28 @@ const METRICS = [
 
 const FEATURES = [
   {
-    icon: '🧠',
+    icon: null,
     title: 'Company Brain',
     desc: 'AI learns your products, suppliers, margins, and certifications. Every quote it builds gets smarter.',
     detail: 'Upload specs, pricing sheets, and supplier docs. TradeFlow builds a knowledge graph that powers every future quote.',
   },
   {
-    icon: '✉️',
+    icon: null,
     title: 'Email-First Inbox',
     desc: 'Forward RFQs. TradeFlow extracts every spec, detects gaps, and drafts clarifications in your language.',
-    detail: 'No new software to learn. Works from the email you already use. Supports English, 中文, and mixed-language threads.',
+    detail: 'No new software to learn. Works from the email you already use. Supports English, Chinese, and mixed-language threads.',
   },
   {
-    icon: '📊',
+    icon: null,
     title: 'Cited Quotes',
-    desc: 'Every number on your quote has a source. Supplier price, margin, FX rate — all traceable.',
+    desc: 'Every number on your quote has a source. Supplier price, margin, FX rate -- all traceable.',
     detail: 'AI cites where every data point came from. Show customers confidence, not guesswork.',
   },
   {
-    icon: '🔄',
+    icon: null,
     title: 'Smart Follow-ups',
     desc: 'Auto-scheduled follow-ups that stop the moment a customer replies. No embarrassing double-texts.',
-    detail: 'AI drafts messages in the customer\'s language. Human approves before send. WhatsApp-compliant within 24h window.',
+    detail: 'AI drafts messages in the customer\'s language. Human approves before send.',
   },
 ];
 
@@ -75,21 +75,18 @@ export default function LandingPage() {
       {/* ── Nav ── */}
       <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b" style={{ background: 'rgba(250,249,246,0.85)', borderColor: '#E8E5E1' }}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: '#0A6E5C' }}>TF</div>
-            <span className="text-lg font-semibold tracking-tight">TradeFlow</span>
-          </div>
+          <div className="text-base font-semibold tracking-tight" style={{ color: '#111' }}>TradeFlow</div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium" style={{ color: '#626260' }}>
             <a href="#features" className="hover:text-black transition-colors">Features</a>
             <a href="#how-it-works" className="hover:text-black transition-colors">How It Works</a>
             <a href="#pricing" className="hover:text-black transition-colors">Pricing</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/admin/inbox" className="text-sm font-medium px-4 py-2 rounded-lg transition-colors" style={{ color: '#626260' }}>
+            <Link href="/login" className="text-sm font-medium px-4 py-2 rounded-lg transition-colors" style={{ color: '#626260' }}>
               Log in
             </Link>
-            <Link href="/admin/inbox" className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-all hover:shadow-lg" style={{ background: '#0A6E5C' }}>
-              Start Free →
+            <Link href="/signup" className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-all" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+              Start Free
             </Link>
           </div>
         </div>
@@ -117,10 +114,10 @@ export default function LandingPage() {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link href="/admin/inbox" className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-base font-semibold text-white transition-all hover:shadow-xl hover:scale-[1.02]" style={{ background: '#0A6E5C' }}>
+            <Link href="/signup" className="w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium text-white transition-all active:translate-y-px active:scale-[0.99]" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
               Start Free Trial
             </Link>
-            <Link href="/admin/inbox" className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-base font-semibold border-2 transition-all hover:shadow-md" style={{ borderColor: '#D1D5DB', color: '#374151' }}>
+            <Link href="/login" className="w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium border transition-colors hover:bg-black/[0.03]" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
               See a Live Demo
             </Link>
           </div>
@@ -132,90 +129,6 @@ export default function LandingPage() {
               {LOGOS.map((name) => (
                 <span key={name} className="text-sm font-medium" style={{ color: '#B0ADA8' }}>{name}</span>
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Product Preview ── */}
-      <section className="px-6 pb-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="rounded-2xl border overflow-hidden shadow-2xl" style={{ background: '#fff', borderColor: '#E5EDF5' }}>
-            {/* Fake browser bar */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ background: '#F8FAFD', borderColor: '#E5EDF5' }}>
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ background: '#FF5F57' }}></div>
-                <div className="w-3 h-3 rounded-full" style={{ background: '#FEBC2E' }}></div>
-                <div className="w-3 h-3 rounded-full" style={{ background: '#28C840' }}></div>
-              </div>
-              <div className="flex-1 mx-4">
-                <div className="px-4 py-1.5 rounded-lg text-xs font-mono" style={{ background: '#E5EDF5', color: '#50617A' }}>
-                  app.tradeflow.ai/admin/inbox
-                </div>
-              </div>
-            </div>
-            {/* Dashboard mockup */}
-            <div className="p-6 md:p-10" style={{ background: '#F8FAFD' }}>
-              <div className="grid grid-cols-12 gap-4">
-                {/* Sidebar */}
-                <div className="col-span-3 hidden md:block space-y-2">
-                  {['Inbox', 'Work Queue', 'Quotes', 'Drafts', 'Knowledge Base'].map((item, i) => (
-                    <div key={item} className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm" style={{ background: i === 0 ? '#EFF6FF' : 'transparent', color: i === 0 ? '#2563EB' : '#50617A', fontWeight: i === 0 ? 600 : 400 }}>
-                      <span className="w-4 h-4 rounded" style={{ background: i === 0 ? '#2563EB' : '#D1D5DB' }}></span>
-                      {item}
-                    </div>
-                  ))}
-                </div>
-                {/* Main */}
-                <div className="col-span-12 md:col-span-9 space-y-3">
-                  {/* Status bar */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>5 new RFQs</div>
-                    <div className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: '#FEF3C7', color: '#92400E' }}>3 awaiting reply</div>
-                    <div className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: '#EFF6FF', color: '#2563EB' }}>2 drafts ready</div>
-                  </div>
-                  {/* Table header */}
-                  <div className="grid grid-cols-12 gap-2 px-4 py-2 text-xs font-semibold rounded-lg" style={{ background: '#E5EDF5', color: '#50617A' }}>
-                    <div className="col-span-5">Subject</div>
-                    <div className="col-span-2">From</div>
-                    <div className="col-span-2">Status</div>
-                    <div className="col-span-2">AI Confidence</div>
-                    <div className="col-span-1">Date</div>
-                  </div>
-                  {/* Rows */}
-                  {[
-                    { subj: 'RFQ: 10,000 x 500ml Vacuum Bottles', from: 'Sarah Chen', status: 'Ready to Quote', conf: '94%', date: 'Sep 15', color: '#038153' },
-                    { subj: 'Re: Silicone Kitchen Set Pricing', from: 'Wei Zhang', status: 'Awaiting Info', conf: '72%', date: 'Sep 14', color: '#AD5918' },
-                    { subj: 'RFQ: Custom USB-C Chargers 5000pcs', from: 'James Lee', status: 'Extracting', conf: '88%', date: 'Sep 14', color: '#2563EB' },
-                    { subj: 'Quote Follow-up: LED Desk Lamps', from: 'Maria Santos', status: 'Draft Sent', conf: '91%', date: 'Sep 13', color: '#7C3AED' },
-                  ].map((row, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 px-4 py-3 rounded-lg text-sm items-center border" style={{ background: '#fff', borderColor: '#F0F0F0' }}>
-                      <div className="col-span-5 font-medium truncate">{row.subj}</div>
-                      <div className="col-span-2" style={{ color: '#50617A' }}>{row.from}</div>
-                      <div className="col-span-2">
-                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: row.color + '15', color: row.color }}>{row.status}</span>
-                      </div>
-                      <div className="col-span-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: '#E5EDF5' }}>
-                            <div className="h-full rounded-full" style={{ width: row.conf, background: row.color }}></div>
-                          </div>
-                          <span className="text-xs font-mono" style={{ color: '#50617A' }}>{row.conf}</span>
-                        </div>
-                      </div>
-                      <div className="col-span-1 text-xs" style={{ color: '#9CA3AF' }}>{row.date}</div>
-                    </div>
-                  ))}
-                  {/* AI insight bar */}
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed" style={{ borderColor: '#0A6E5C40', background: '#E6F4F020' }}>
-                    <span className="text-lg">✨</span>
-                    <div>
-                      <span className="text-sm font-semibold" style={{ color: '#0A6E5C' }}>AI Insight: </span>
-                      <span className="text-sm" style={{ color: '#50617A' }}>Sarah Chen&apos;s RFQ matches a supplier quote you received last week. Ready to quote at 32% margin.</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -248,7 +161,6 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-6">
             {FEATURES.map((f) => (
               <div key={f.title} className="group p-8 rounded-2xl border transition-all hover:shadow-xl hover:-translate-y-1" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
-                <div className="text-3xl mb-4">{f.icon}</div>
                 <h3 className="text-xl font-bold mb-2">{f.title}</h3>
                 <p className="text-sm leading-relaxed mb-4" style={{ color: '#626260' }}>{f.desc}</p>
                 <p className="text-xs leading-relaxed px-4 py-3 rounded-lg" style={{ background: '#F8FAFD', color: '#50617A' }}>{f.detail}</p>
@@ -341,7 +253,7 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/admin/inbox" className="block w-full text-center py-3 rounded-xl text-sm font-semibold transition-all" style={{ background: plan.accent ? '#0A6E5C' : '#F3F4F6', color: plan.accent ? '#fff' : '#374151' }}>
+                <Link href="/signup" className="block w-full text-center py-3 rounded-lg text-sm font-medium transition-all" style={{ background: plan.accent ? '#0A6E5C' : '#F3F4F6', color: plan.accent ? '#fff' : '#374151', boxShadow: plan.accent ? 'inset 0 -2px 0 0 #085a4a' : 'none' }}>
                   {plan.cta}
                 </Link>
               </div>
@@ -361,10 +273,10 @@ export default function LandingPage() {
             Join trading companies in HK, Shenzhen, and beyond who are already using AI to quote faster and win more deals.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/admin/inbox" className="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-semibold text-white transition-all hover:shadow-xl hover:scale-[1.02]" style={{ background: '#0A6E5C' }}>
+            <Link href="/signup" className="w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium text-white transition-all active:translate-y-px active:scale-[0.99]" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
               Get Started Free
             </Link>
-            <Link href="/admin/inbox" className="w-full sm:w-auto px-8 py-4 rounded-xl text-base font-semibold border-2 transition-all hover:shadow-md" style={{ borderColor: '#D1D5DB', color: '#374151' }}>
+            <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium border transition-colors hover:bg-black/[0.03]" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
               Book a Demo
             </Link>
           </div>
@@ -374,10 +286,7 @@ export default function LandingPage() {
       {/* ── Footer ── */}
       <footer className="py-12 px-6 border-t" style={{ borderColor: '#E8E5E1' }}>
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs" style={{ background: '#0A6E5C' }}>TF</div>
-            <span className="text-sm font-semibold">TradeFlow</span>
-          </div>
+          <div className="text-sm font-semibold" style={{ color: '#111' }}>TradeFlow</div>
           <div className="flex items-center gap-6 text-sm" style={{ color: '#626260' }}>
             <a href="#" className="hover:text-black transition-colors">Privacy</a>
             <a href="#" className="hover:text-black transition-colors">Terms</a>
