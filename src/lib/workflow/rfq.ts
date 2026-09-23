@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { callNimJson } from '@/lib/ai/nim';
-import { sendEmail } from '@/lib/composio/gmail';
+import { sendViaChannel } from '@/lib/composio/channel';
 
 export const DEMO_COMPANY_ID = 'de16b018-a635-4b45-a5ee-101dea1d66a1';
 
@@ -172,7 +172,10 @@ export async function createRfqBatch(input: RfqCreateInput): Promise<{ batchId: 
   for (let i = 0; i < suppliers.length; i++) {
     const supplier = suppliers[i];
     const rfq = rfqs.find((r: any) => r.supplier_id === supplier.id);
-    const toAddress = supplier.contact_email;
+    // Prefer email when a contact_email exists; otherwise fall back to WhatsApp
+    // via contact_phone. (No unmigrated preferred-channel column.)
+    const useWhatsApp = !supplier.contact_email && supplier.contact_phone;
+    const toAddress = useWhatsApp ? supplier.contact_phone : supplier.contact_email;
     if (!toAddress) continue;
 
     const { body, reasoning, citations } = await draftRfqBody({
@@ -189,7 +192,7 @@ export async function createRfqBatch(input: RfqCreateInput): Promise<{ batchId: 
       .insert({
         company_id: DEMO_COMPANY_ID,
         inquiry_id: opp.inquiry_id || null,
-        channel: 'email',
+        channel: useWhatsApp ? 'whatsapp' : 'email',
         to_address: toAddress,
         subject: `RFQ / Request for quotation — ${inquiry?.subject || 'Sourcing requirement'} (${referenceNumber})`,
         body,
@@ -223,7 +226,7 @@ export async function approveAndSendBatch(batchId: string): Promise<{ sent: numb
 
   let draftQuery = supabase
     .from('outbound_messages')
-    .select('id, to_address, subject, body, body_html')
+    .select('id, channel, to_address, subject, body, body_html')
     .eq('draft_status', 'pending_approval');
 
   if (opp?.inquiry_id) {
@@ -237,7 +240,8 @@ export async function approveAndSendBatch(batchId: string): Promise<{ sent: numb
 
   for (const draft of drafts || []) {
     if (!draft.to_address) continue;
-    const res = await sendEmail(draft.to_address, draft.subject || 'RFQ', draft.body, false);
+    const channel: 'email' | 'whatsapp' = draft.channel === 'whatsapp' ? 'whatsapp' : 'email';
+    const res = await sendViaChannel(channel, draft.to_address, draft.subject || 'RFQ', draft.body);
     if (res.success) {
       await supabase.from('outbound_messages').update({ draft_status: 'sent', sent_at: new Date().toISOString() }).eq('id', draft.id);
       sent.push(1);
