@@ -121,6 +121,51 @@ export default function LandingPage() {
               See a Live Demo
             </Link>
           </div>
+
+          {/* Pipeline graphic */}
+          <div className="max-w-4xl mx-auto rounded-2xl border p-6 md:p-8 text-left" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: '0 24px 60px -30px rgba(10,110,92,0.18)' }}>
+            <div className="grid md:grid-cols-4 gap-4 md:gap-0">
+              {[
+                { icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                ), label: 'Inquiry', sub: 'Extract specs' },
+                { icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" /></svg>
+                ), label: 'Clarify', sub: 'AI flags gaps' },
+                { icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 6.75v-1.5a4.5 4.5 0 00-9 0v1.5h9z" /></svg>
+                ), label: 'RFQ', sub: 'Batch suppliers' },
+                { icon: (
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                ), label: 'Quote', sub: 'Cited & ready' },
+              ].map((step, i) => (
+                <div key={step.label} className="flex items-center gap-4 md:gap-0">
+                  <div className="flex-1 flex md:flex-col items-center md:items-start gap-3 md:text-left">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>{step.icon}</div>
+                      <div className="md:hidden">
+                        <div className="text-sm font-semibold">{step.label}</div>
+                        <div className="text-xs" style={{ color: '#9CA3AF' }}>{step.sub}</div>
+                      </div>
+                    </div>
+                    <div className="hidden md:block">
+                      <div className="text-sm font-semibold">{step.label}</div>
+                      <div className="text-xs" style={{ color: '#9CA3AF' }}>{step.sub}</div>
+                    </div>
+                  </div>
+                  {i < 3 && (
+                    <svg className="hidden md:block w-4 h-4 shrink-0 mx-1" style={{ color: '#C8C6BF' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderColor: '#EFEDE8' }}>
+              <span className="text-xs" style={{ color: '#9CA3AF' }}>Every step is a draft you approve before it goes out.</span>
+              <span className="text-xs font-semibold" style={{ color: '#0A6E5C' }}>Email · WhatsApp</span>
+            </div>
+          </div>
         </div>
       </section>
 
